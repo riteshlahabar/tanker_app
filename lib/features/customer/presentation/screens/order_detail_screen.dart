@@ -6,7 +6,7 @@ import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/status_chip.dart';
 import '../providers/order_detail_controller.dart';
 import '../providers/my_orders_controller.dart';
-import '../widgets/order_timeline.dart';
+import '../../../../shared/widgets/order_timeline.dart';
 
 /// "Order tracking timeline" — pushed from a tile tap in My Orders or Home,
 /// never a tab of its own.

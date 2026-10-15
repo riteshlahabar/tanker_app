@@ -98,5 +98,49 @@ final apiClientProvider = Provider<ApiClient>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ApiClientRef = ProviderRef<ApiClient>;
+String _$deliverySlotRepositoryHash() =>
+    r'bcbe50827a9173a7734c9947e6de4d58f5b909c9';
+
+/// Shared by every role that needs the panel's delivery windows (the
+/// customer's order form, the admin's New Order).
+///
+/// Copied from [deliverySlotRepository].
+@ProviderFor(deliverySlotRepository)
+final deliverySlotRepositoryProvider =
+    Provider<DeliverySlotRepository>.internal(
+      deliverySlotRepository,
+      name: r'deliverySlotRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$deliverySlotRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DeliverySlotRepositoryRef = ProviderRef<DeliverySlotRepository>;
+String _$deliverySlotOptionsHash() =>
+    r'fc9fac7dcb331e374e031eacd552008eaf44ddd3';
+
+/// The windows the panel offers, for a form's dropdown.
+///
+/// Copied from [deliverySlotOptions].
+@ProviderFor(deliverySlotOptions)
+final deliverySlotOptionsProvider =
+    AutoDisposeFutureProvider<List<DeliverySlot>>.internal(
+      deliverySlotOptions,
+      name: r'deliverySlotOptionsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$deliverySlotOptionsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DeliverySlotOptionsRef =
+    AutoDisposeFutureProviderRef<List<DeliverySlot>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

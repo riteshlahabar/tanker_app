@@ -1,9 +1,11 @@
-import '../../../shared/utils/json_read.dart';
+import '../utils/json_read.dart';
 
-/// One row of the customer's "My Deliveries" list, as `UpcomingDateResource`
-/// describes it. `canSkip`/`skipBlockedReason` are resolved server-side by
-/// `SkipWindow`, so the button here only ever mirrors the backend's own
-/// rule rather than guessing at it.
+/// One row of a "My Deliveries" / schedule-detail upcoming list, as
+/// `UpcomingDateResource` describes it — read the same way whether the
+/// customer is looking at their own routine or the admin at any schedule's.
+/// `canSkip`/`skipBlockedReason` are resolved server-side by `SkipWindow`
+/// against whoever is asking, so the button here only ever mirrors the
+/// backend's own rule rather than guessing at it.
 class UpcomingDeliveryDate {
   const UpcomingDeliveryDate({
     required this.date,

@@ -1,6 +1,6 @@
 import '../../../shared/utils/json_read.dart';
 import 'delivery_schedule.dart';
-import 'upcoming_delivery_date.dart';
+import '../../../shared/models/upcoming_delivery_date.dart';
 
 /// `GET /customer/schedule`'s response: null `schedule` is not an error — most
 /// customers order ad-hoc and simply have no routine.

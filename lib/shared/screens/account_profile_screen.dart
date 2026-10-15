@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/widgets/app_text_field.dart';
-import '../../../../shared/widgets/primary_button.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../auth/presentation/providers/session_controller.dart';
-import '../../../auth/domain/auth_user.dart';
-import '../../../auth/presentation/providers/session_state.dart';
+import '../../features/auth/domain/auth_user.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/auth/presentation/providers/session_controller.dart';
+import '../../features/auth/presentation/providers/session_state.dart';
+import '../widgets/app_text_field.dart';
+import '../widgets/primary_button.dart';
 
-class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+/// View/edit account details, change password, logout — identical for every
+/// role, so each role shell's Profile tab points at this one screen rather
+/// than keeping its own copy.
+class AccountProfileScreen extends ConsumerStatefulWidget {
+  const AccountProfileScreen({super.key});
 
   @override
-  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<AccountProfileScreen> createState() => _AccountProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _AccountProfileScreenState extends ConsumerState<AccountProfileScreen> {
   bool _editing = false;
   bool _savingProfile = false;
   bool _savingPassword = false;

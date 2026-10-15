@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
 import '../providers/my_schedule_controller.dart';
-import '../widgets/upcoming_date_tile.dart';
+import '../../../../shared/widgets/upcoming_date_tile.dart';
 
 /// Pushed from the Home schedule card. Lists the next ~14 dates of the
 /// customer's routine with a Skip/Restore button each — the "My Deliveries"

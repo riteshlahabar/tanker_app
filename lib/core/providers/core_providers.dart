@@ -3,10 +3,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../shared/models/delivery_slot.dart';
 import '../config/app_config.dart';
 import '../network/api_client.dart';
 import '../network/interceptors/auth_interceptor.dart';
 import '../network/session_expiry_bus.dart';
+import '../repositories/delivery_slot_repository.dart';
+import '../repositories/delivery_slot_repository_impl.dart';
 import '../storage/prefs.dart';
 import '../storage/secure_storage.dart';
 
@@ -72,3 +75,20 @@ Dio dio(Ref ref) {
 
 @Riverpod(keepAlive: true)
 ApiClient apiClient(Ref ref) => ApiClient(ref.watch(dioProvider));
+
+/// Shared by every role that needs the panel's delivery windows (the
+/// customer's order form, the admin's New Order).
+@Riverpod(keepAlive: true)
+DeliverySlotRepository deliverySlotRepository(Ref ref) =>
+    DeliverySlotRepositoryImpl(client: ref.watch(apiClientProvider));
+
+/// The windows the panel offers, for a form's dropdown.
+@riverpod
+Future<List<DeliverySlot>> deliverySlotOptions(Ref ref) async {
+  final result = await ref.read(deliverySlotRepositoryProvider).active();
+
+  return result.when(
+    success: (slots) => slots,
+    error: (failure) => throw failure,
+  );
+}

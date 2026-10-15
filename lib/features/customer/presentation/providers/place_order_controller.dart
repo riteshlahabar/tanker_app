@@ -1,23 +1,10 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../../../shared/models/delivery_slot.dart';
 import '../../../../shared/models/order.dart';
 import 'customer_order_providers.dart';
 
 part 'place_order_controller.g.dart';
-
-/// The windows the panel offers, for the form's dropdown.
-@riverpod
-Future<List<DeliverySlot>> deliverySlotOptions(Ref ref) async {
-  final result = await ref.read(deliverySlotRepositoryProvider).active();
-
-  return result.when(
-    success: (slots) => slots,
-    error: (failure) => throw failure,
-  );
-}
 
 class PlaceOrderState {
   const PlaceOrderState({this.submitting = false, this.failure, this.placedOrder});

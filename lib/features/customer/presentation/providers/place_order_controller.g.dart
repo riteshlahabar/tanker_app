@@ -6,28 +6,6 @@ part of 'place_order_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$deliverySlotOptionsHash() =>
-    r'fc9fac7dcb331e374e031eacd552008eaf44ddd3';
-
-/// The windows the panel offers, for the form's dropdown.
-///
-/// Copied from [deliverySlotOptions].
-@ProviderFor(deliverySlotOptions)
-final deliverySlotOptionsProvider =
-    AutoDisposeFutureProvider<List<DeliverySlot>>.internal(
-      deliverySlotOptions,
-      name: r'deliverySlotOptionsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$deliverySlotOptionsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef DeliverySlotOptionsRef =
-    AutoDisposeFutureProviderRef<List<DeliverySlot>>;
 String _$placeOrderControllerHash() =>
     r'ed4ecb257006927f2c51a54d3faf8e7bd39a93a9';
 

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/colors.dart';
-import '../../domain/upcoming_delivery_date.dart';
+import '../../core/theme/colors.dart';
+import '../models/upcoming_delivery_date.dart';
 
-/// One row of My Deliveries. `canSkip` and its reason come straight from the
-/// server's `SkipWindow`, so the button here can never allow a tap the
-/// backend would refuse — it just mirrors the decision already made.
+/// One row of an upcoming-deliveries list — the customer's own "My
+/// Deliveries", or the admin looking at any schedule's. `canSkip` and its
+/// reason come straight from the server's `SkipWindow`, so the button here
+/// can never allow a tap the backend would refuse — it just mirrors the
+/// decision already made for whoever is asking.
 class UpcomingDateTile extends StatelessWidget {
   const UpcomingDateTile({
     super.key,

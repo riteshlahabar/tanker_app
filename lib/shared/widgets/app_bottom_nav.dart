@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/colors.dart';
 import '../models/nav_tab.dart';
 
 /// The design's bottom bar, lifted from appetit's dashboard: 25px icons on the
@@ -19,8 +20,7 @@ class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  /// appetit's bar colour, kept exactly.
-  static const Color background = Color(0xFF462F4C);
+  static const Color background = appBottomNavColor;
 
   @override
   Widget build(BuildContext context) {

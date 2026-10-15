@@ -33,6 +33,10 @@ const appShadowColorDark = Color(0x1A3E3942);
 const appColorPrimary = Color(0xFF1157FA);
 const appLayout_background = Color(0xFFf8f8f8);
 
+/// appetit's bottom-bar colour — also used for the app bar, by request, so
+/// the two bars read as one piece rather than two different treatments.
+const appBottomNavColor = Color(0xFF462F4C);
+
 /// ---------------------------------------------------------------------------
 /// Status colours for the order lifecycle. Mapped onto the design's palette
 /// so a status chip never introduces a colour the design does not already use.

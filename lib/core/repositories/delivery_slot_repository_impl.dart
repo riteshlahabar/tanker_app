@@ -1,8 +1,8 @@
-import '../../../core/network/api_client.dart';
-import '../../../core/network/api_result.dart';
-import '../../../shared/models/delivery_slot.dart';
-import '../../../shared/utils/json_read.dart';
-import '../domain/delivery_slot_repository.dart';
+import '../../shared/models/delivery_slot.dart';
+import '../../shared/utils/json_read.dart';
+import '../network/api_client.dart';
+import '../network/api_result.dart';
+import 'delivery_slot_repository.dart';
 
 class DeliverySlotRepositoryImpl implements DeliverySlotRepository {
   const DeliverySlotRepositoryImpl({required ApiClient client}) : _client = client;

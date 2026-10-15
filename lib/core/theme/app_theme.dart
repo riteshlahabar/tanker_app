@@ -25,11 +25,12 @@ class AppThemeData {
     dividerColor: viewLineColor,
     fontFamily: GoogleFonts.openSans().fontFamily,
     appBarTheme: const AppBarTheme(
-      backgroundColor: appLayout_background,
-      iconTheme: IconThemeData(color: textPrimaryColor),
+      backgroundColor: appBottomNavColor,
+      foregroundColor: Colors.white,
+      iconTheme: IconThemeData(color: Colors.white),
       systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarIconBrightness: Brightness.dark,
-        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.light,
+        statusBarColor: appBottomNavColor,
       ),
     ),
     textSelectionTheme: const TextSelectionThemeData(cursorColor: Colors.black),
@@ -57,9 +58,13 @@ class AppThemeData {
     scaffoldBackgroundColor: appBackgroundColorDark,
     highlightColor: appBackgroundColorDark,
     appBarTheme: const AppBarTheme(
-      backgroundColor: appBackgroundColorDark,
-      iconTheme: IconThemeData(color: blackColor),
-      systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
+      backgroundColor: appBottomNavColor,
+      foregroundColor: Colors.white,
+      iconTheme: IconThemeData(color: Colors.white),
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarIconBrightness: Brightness.light,
+        statusBarColor: appBottomNavColor,
+      ),
     ),
     primaryColor: color_primary_black,
     dividerColor: const Color(0xFFDADADA).withValues(alpha: 0.3),

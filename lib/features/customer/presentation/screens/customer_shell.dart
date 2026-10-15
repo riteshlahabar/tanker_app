@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/models/nav_tab.dart';
+import '../../../../shared/screens/account_profile_screen.dart';
 import '../../../../shared/widgets/role_shell.dart';
 import 'customer_home_screen.dart';
 import 'my_orders_screen.dart';
 import 'notifications_screen.dart';
 import 'place_order_screen.dart';
-import 'profile_screen.dart';
 
 /// What a customer sees: place an order, follow their own orders, read
 /// notices, manage their account. No drawer — that is the admin's alone.
@@ -45,7 +45,7 @@ class CustomerShell extends StatelessWidget {
           label: 'Profile',
           icon: Icons.person_outline,
           title: 'My Profile',
-          body: ProfileScreen(),
+          body: AccountProfileScreen(),
         ),
       ],
     );

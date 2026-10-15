@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/models/nav_tab.dart';
-import '../../../../shared/widgets/pending_screen.dart';
+import '../../../../shared/screens/account_profile_screen.dart';
 import '../../../../shared/widgets/role_shell.dart';
 import '../widgets/admin_drawer.dart';
+import 'admin_dashboard_screen.dart';
+import 'admin_orders_screen.dart';
+import 'new_order_screen.dart';
+import 'reports_screen.dart';
 
 /// What the owner sees. The app mirrors the panel, so the five busiest screens
 /// are tabs and the rest of the master data sits in the drawer — the only
@@ -20,31 +24,31 @@ class AdminShell extends StatelessWidget {
           label: 'Dashboard',
           icon: Icons.dashboard_outlined,
           title: 'Dashboard',
-          body: PendingScreen(name: 'Dashboard', icon: Icons.dashboard_outlined),
+          body: AdminDashboardScreen(),
         ),
         NavTab(
           label: 'Orders',
           icon: Icons.receipt_long_outlined,
           title: 'Orders',
-          body: PendingScreen(name: 'Orders', icon: Icons.receipt_long_outlined),
+          body: AdminOrdersScreen(),
         ),
         NavTab(
           label: 'New Order',
           icon: Icons.add_circle_outline,
           title: 'Take an Order',
-          body: PendingScreen(name: 'Create an order', icon: Icons.add_circle_outline),
+          body: NewOrderScreen(),
         ),
         NavTab(
           label: 'Reports',
           icon: Icons.bar_chart_outlined,
           title: 'Reports',
-          body: PendingScreen(name: 'Reports', icon: Icons.bar_chart_outlined),
+          body: ReportsScreen(),
         ),
         NavTab(
           label: 'Profile',
           icon: Icons.person_outline,
           title: 'My Profile',
-          body: PendingScreen(name: 'Profile', icon: Icons.person_outline),
+          body: AccountProfileScreen(),
         ),
       ],
     );

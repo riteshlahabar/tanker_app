@@ -25,6 +25,28 @@ enum OrderStatus {
 
   bool get isOpen => this != OrderStatus.delivered && this != OrderStatus.cancelled;
 
+  /// A generic label for places with no specific order to read `status_label`
+  /// off — the admin's status filter dropdown, say. Mirrors
+  /// `OrderStatusEnum::label()`.
+  String get label => switch (this) {
+        OrderStatus.pending => 'Pending',
+        OrderStatus.assigned => 'Assigned',
+        OrderStatus.refilling => 'Refilling at Spot',
+        OrderStatus.outForDelivery => 'Out for Delivery',
+        OrderStatus.delivered => 'Delivered',
+        OrderStatus.cancelled => 'Cancelled',
+      };
+
+  /// The wire value `OrderStatusEnum` uses — the inverse of [fromValue].
+  String get value => switch (this) {
+        OrderStatus.pending => 'pending',
+        OrderStatus.assigned => 'assigned',
+        OrderStatus.refilling => 'refilling',
+        OrderStatus.outForDelivery => 'out_for_delivery',
+        OrderStatus.delivered => 'delivered',
+        OrderStatus.cancelled => 'cancelled',
+      };
+
   Color get color => switch (this) {
         OrderStatus.pending => statusPendingColor,
         OrderStatus.assigned => statusAssignedColor,

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../shared/models/order_status_log_entry.dart';
+import '../models/order_status_log_entry.dart';
 
 /// A vertical stepper built from the order's status log — the "order
 /// tracking timeline" the owner asked for, read straight off
 /// `OrderStatusLogResource` so it can never disagree with the order's own
-/// status.
+/// status. Shared by every role that can see an order's detail screen.
 class OrderTimeline extends StatelessWidget {
   const OrderTimeline({super.key, required this.entries});
 
