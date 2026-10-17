@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/tanker_count_field.dart';
 import '../../domain/customer_option.dart';
 import '../providers/admin_orders_controller.dart';
 import '../providers/new_order_controller.dart';
@@ -23,7 +24,7 @@ class NewOrderScreen extends ConsumerStatefulWidget {
 class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
   final _formKey = GlobalKey<FormState>();
   final _address = TextEditingController();
-  final _litres = TextEditingController();
+  int _tankers = 1;
   final _amount = TextEditingController();
   final _notes = TextEditingController();
   DateTime _date = DateTime.now();
@@ -33,7 +34,6 @@ class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
   @override
   void dispose() {
     _address.dispose();
-    _litres.dispose();
     _amount.dispose();
     _notes.dispose();
     super.dispose();
@@ -75,7 +75,7 @@ class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
           latitude: _customer!.latitude,
           longitude: _customer!.longitude,
           deliverySlotId: _slotId,
-          quantityLitres: int.tryParse(_litres.text.trim()),
+          tankerCount: _tankers,
           notes: _notes.text.trim(),
         );
 
@@ -91,7 +91,7 @@ class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
     setState(() {
       _customer = null;
       _address.clear();
-      _litres.clear();
+      _tankers = 1;
       _amount.clear();
       _notes.clear();
     });
@@ -149,11 +149,9 @@ class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
               error: (_, _) => const Text('Could not load delivery slots.'),
             ),
             const SizedBox(height: 16),
-            AppTextField(
-              controller: _litres,
-              label: 'Quantity (litres)',
-              hint: 'Optional',
-              keyboardType: TextInputType.number,
+            TankerCountField(
+              value: _tankers,
+              onChanged: (count) => setState(() => _tankers = count),
             ),
             const SizedBox(height: 16),
             AppTextField(

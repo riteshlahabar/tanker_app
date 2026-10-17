@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/my_schedule_controller.dart';
 import '../../../../shared/widgets/upcoming_date_tile.dart';
 
@@ -106,6 +107,7 @@ class MyDeliveriesScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

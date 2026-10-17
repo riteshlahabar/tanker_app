@@ -7,7 +7,7 @@ part of 'driver_orders_controller.dart';
 // **************************************************************************
 
 String _$driverOrdersControllerHash() =>
-    r'caba9b271f09865e818aa20625063e4c86cc8152';
+    r'ac8470b2f805129b27b3ec0e28624a3314a2bba5';
 
 /// Copied from Dart SDK
 class _SystemHash {

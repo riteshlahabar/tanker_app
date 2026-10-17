@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
+import '../../../../shared/widgets/tanker_count_field.dart';
 import '../../domain/admin_schedule.dart';
 import '../../domain/customer_option.dart';
 import '../../domain/driver_option.dart';
@@ -46,8 +48,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
   int? _slotId;
   TimeOfDay? _deliveryTime;
 
-  late final _quantityLitres =
-      TextEditingController(text: widget.existing?.quantityLitres?.toString() ?? '');
+  late int _tankers = widget.existing?.tankerCount ?? 1;
   late final _orderAmount =
       TextEditingController(text: widget.existing?.orderAmount?.toString() ?? '');
   late final _address = TextEditingController(text: widget.existing?.deliveryAddress);
@@ -88,7 +89,6 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
   @override
   void dispose() {
     _intervalDays.dispose();
-    _quantityLitres.dispose();
     _orderAmount.dispose();
     _address.dispose();
     _latitude.dispose();
@@ -175,7 +175,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
             if (!isEditing) 'customer_id': _customer!.id,
             'interval_days': int.tryParse(_intervalDays.text.trim()) ?? 1,
             'weekdays': _patternMode == _Pattern.weekdays ? _weekdays.toList() : null,
-            'quantity_litres': ?int.tryParse(_quantityLitres.text.trim()),
+            'tanker_count': _tankers,
             'order_amount': ?double.tryParse(_orderAmount.text.trim()),
             'delivery_slot_id': _timingMode == _DeliveryTiming.slot ? _slotId : null,
             'delivery_time':
@@ -336,11 +336,10 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
                   ),
                 ),
               const SizedBox(height: 20),
-              AppTextField(
-                controller: _quantityLitres,
-                label: 'Quantity (litres)',
-                hint: 'Optional',
-                keyboardType: TextInputType.number,
+              TankerCountField(
+                value: _tankers,
+                label: 'Tankers per delivery',
+                onChanged: (count) => setState(() => _tankers = count),
               ),
               const SizedBox(height: 12),
               AppTextField(
@@ -429,6 +428,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

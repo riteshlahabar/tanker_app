@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_spots_controller.dart';
 import 'spot_form_screen.dart';
 
@@ -130,6 +131,7 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
         onPressed: () => _openForm(),
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

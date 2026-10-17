@@ -170,6 +170,8 @@ class _AccountProfileScreenState extends ConsumerState<AccountProfileScreen> {
   }
 
   List<Widget> _readOnlyFields(AuthUser user) {
+    final salary = user.monthlySalary;
+
     return [
       ListTile(
         contentPadding: EdgeInsets.zero,
@@ -180,6 +182,16 @@ class _AccountProfileScreenState extends ConsumerState<AccountProfileScreen> {
           child: const Text('Edit'),
         ),
       ),
+      // Drivers only, and read-only: the office sets it. Null means the
+      // signed-in account is not a driver at all, so the row is absent rather
+      // than showing a salary of zero to a customer.
+      if (salary != null)
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.payments_outlined),
+          title: Text('₹ ${salary.toStringAsFixed(0)}'),
+          subtitle: const Text('Monthly salary'),
+        ),
     ];
   }
 

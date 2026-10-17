@@ -11,7 +11,7 @@ class AdminDashboard {
     required this.pending,
     required this.deliveredToday,
     required this.revenueToday,
-    required this.driverEarningToday,
+    required this.tankersDeliveredToday,
   });
 
   final int tankers;
@@ -22,7 +22,7 @@ class AdminDashboard {
   final int pending;
   final int deliveredToday;
   final double revenueToday;
-  final double driverEarningToday;
+  final int tankersDeliveredToday;
 
   factory AdminDashboard.fromJson(Map<String, dynamic> json) => AdminDashboard(
         tankers: JsonRead.asInt(json['tankers']),
@@ -33,6 +33,6 @@ class AdminDashboard {
         pending: JsonRead.asInt(json['pending']),
         deliveredToday: JsonRead.asInt(json['delivered_today']),
         revenueToday: JsonRead.asDouble(json['revenue_today']),
-        driverEarningToday: JsonRead.asDouble(json['driver_earning_today']),
+        tankersDeliveredToday: JsonRead.asInt(json['tankers_delivered_today']),
       );
 }

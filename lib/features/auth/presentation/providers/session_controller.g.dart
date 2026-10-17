@@ -6,7 +6,7 @@ part of 'session_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$sessionControllerHash() => r'562e8ca79c65f244686afe0e51c00d7c914db477';
+String _$sessionControllerHash() => r'1cb2ecbde04a8ba913319feaec1f02e6d0678caf';
 
 /// Who is signed in, for the whole app. The router reads this to decide which
 /// shell to show, and nothing else keeps its own copy.

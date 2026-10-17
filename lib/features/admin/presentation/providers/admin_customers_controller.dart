@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../../../shared/models/paginated.dart';
 import '../../domain/admin_customer.dart';
 import '../../domain/entity_list_filter.dart';
@@ -46,7 +45,7 @@ class AdminCustomersState {
 class AdminCustomersController extends _$AdminCustomersController {
   @override
   AdminCustomersState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const AdminCustomersState();
   }

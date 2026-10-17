@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../../../shared/models/paginated.dart';
 import '../../../../shared/models/spot.dart';
 import '../../domain/entity_list_filter.dart';
@@ -46,7 +45,7 @@ class AdminSpotsState {
 class AdminSpotsController extends _$AdminSpotsController {
   @override
   AdminSpotsState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const AdminSpotsState();
   }

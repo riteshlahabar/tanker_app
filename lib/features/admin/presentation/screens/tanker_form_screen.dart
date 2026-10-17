@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_tanker.dart';
 import '../providers/admin_providers.dart';
 import '../providers/admin_tanker_form_controller.dart';
@@ -24,6 +25,8 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
   late final _vehicleNumber = TextEditingController(text: widget.existing?.vehicleNumber);
   late final _capacity =
       TextEditingController(text: widget.existing?.capacityLitres?.toString() ?? '');
+  late final _rate =
+      TextEditingController(text: widget.existing?.tankerRate?.toStringAsFixed(2) ?? '');
   late final _modelYear =
       TextEditingController(text: widget.existing?.modelYear?.toString() ?? '');
   late final _rcNumber = TextEditingController(text: widget.existing?.rcNumber);
@@ -44,6 +47,7 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
     _vehicleName.dispose();
     _vehicleNumber.dispose();
     _capacity.dispose();
+    _rate.dispose();
     _modelYear.dispose();
     _rcNumber.dispose();
     _notes.dispose();
@@ -71,6 +75,7 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
           {
             'vehicle_name': _vehicleName.text.trim(),
             'vehicle_number': _vehicleNumber.text.trim(),
+            'tanker_rate': ?double.tryParse(_rate.text.trim()),
             'capacity_litres': ?int.tryParse(_capacity.text.trim()),
             'model_year': ?int.tryParse(_modelYear.text.trim()),
             'rc_number': _rcNumber.text.trim().isEmpty ? null : _rcNumber.text.trim(),
@@ -150,9 +155,16 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
               ),
               const SizedBox(height: 12),
               AppTextField(
+                controller: _rate,
+                label: 'Rate per tanker (₹)',
+                hint: 'Blank uses the Price per Tanker setting',
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              AppTextField(
                 controller: _capacity,
                 label: 'Capacity (litres)',
-                hint: 'Optional',
+                hint: 'Optional — vehicle size, not the price',
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
@@ -200,6 +212,7 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

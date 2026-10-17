@@ -7,7 +7,7 @@ part of 'admin_tankers_controller.dart';
 // **************************************************************************
 
 String _$adminTankersControllerHash() =>
-    r'af82ae49ac6163b9ef1537912c6a6d30fc3dcadd';
+    r'1b82b0d3be3ef0414d70ed3fa0a18d3a5578f6c3';
 
 /// See also [AdminTankersController].
 @ProviderFor(AdminTankersController)

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_providers.dart';
 import '../providers/admin_spot_form_controller.dart';
 
@@ -197,6 +198,7 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/status_chip.dart';
 import '../providers/order_detail_controller.dart';
 import '../providers/my_orders_controller.dart';
@@ -90,8 +91,8 @@ class OrderDetailScreen extends ConsumerWidget {
                     '${_dateFormat.format(order.deliveryDate!)}'
                     '${order.deliverySlot != null ? ' · ${order.deliverySlot}' : ''}',
                   ),
-                if (order.quantityLitres != null)
-                  _detailRow(Icons.water_drop_outlined, '${order.quantityLitres} litres'),
+                if (order.tankerCount != null)
+                  _detailRow(Icons.water_drop_outlined, order.tankerLabel),
                 if (order.driver != null)
                   _detailRow(
                     Icons.local_shipping_outlined,
@@ -124,6 +125,7 @@ class OrderDetailScreen extends ConsumerWidget {
             ),
           ),
       },
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 

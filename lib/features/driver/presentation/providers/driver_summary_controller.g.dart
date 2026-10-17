@@ -7,7 +7,7 @@ part of 'driver_summary_controller.dart';
 // **************************************************************************
 
 String _$driverSummaryControllerHash() =>
-    r'b27b98c1f7d72301c871b804923597f93ab86a3a';
+    r'0ff489a64f064879d8a1cb17e1bf981009643d97';
 
 /// See also [DriverSummaryController].
 @ProviderFor(DriverSummaryController)

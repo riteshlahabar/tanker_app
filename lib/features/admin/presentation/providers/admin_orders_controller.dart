@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../../../shared/models/order.dart';
 import '../../../../shared/models/paginated.dart';
 import '../../domain/admin_order_filter.dart';
@@ -48,7 +47,7 @@ class AdminOrdersState {
 class AdminOrdersController extends _$AdminOrdersController {
   @override
   AdminOrdersState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const AdminOrdersState();
   }

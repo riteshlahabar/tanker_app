@@ -45,7 +45,7 @@ class AdminOrderRepositoryImpl implements AdminOrderRepository {
     double? latitude,
     double? longitude,
     int? deliverySlotId,
-    int? quantityLitres,
+    int? tankerCount,
     String? notes,
   }) =>
       _client.post<Order>(
@@ -58,7 +58,7 @@ class AdminOrderRepositoryImpl implements AdminOrderRepository {
           'latitude': ?latitude,
           'longitude': ?longitude,
           'delivery_slot_id': ?deliverySlotId,
-          'quantity_litres': ?quantityLitres,
+          'tanker_count': ?tankerCount,
           if (notes != null && notes.isNotEmpty) 'notes': notes,
         },
         parse: (data) => Order.fromJson(JsonRead.asMap(data)),
@@ -71,6 +71,23 @@ class AdminOrderRepositoryImpl implements AdminOrderRepository {
         body: {
           'driver_id': driverId,
           'spot_id': ?spotId,
+        },
+        parse: (data) => Order.fromJson(JsonRead.asMap(data)),
+      );
+
+  @override
+  Future<ApiResult<Order>> reassign(
+    int orderId, {
+    required int driverId,
+    int? spotId,
+    String? reason,
+  }) =>
+      _client.post<Order>(
+        '/admin/orders/$orderId/reassign',
+        body: {
+          'driver_id': driverId,
+          'spot_id': ?spotId,
+          'reason': ?reason,
         },
         parse: (data) => Order.fromJson(JsonRead.asMap(data)),
       );

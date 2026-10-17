@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/providers/first_load.dart';
 import 'auth_providers.dart';
 import 'session_state.dart';
 
@@ -24,7 +23,7 @@ class SessionController extends _$SessionController {
 
     ref.onDispose(subscription.cancel);
 
-    unawaited(_restore());
+    FirstLoad.after(ref, _restore);
 
     return const SessionChecking();
   }
@@ -51,6 +50,26 @@ class SessionController extends _$SessionController {
 
   /// Called by the login controller once credentials are accepted.
   void signedIn(SessionSignedIn session) => state = session;
+
+  /// Re-reads the signed-in account, for a screen that shows something the
+  /// admin can change from the panel — the booking form's default delivery
+  /// address being the one that matters. Without this the app would keep
+  /// showing whatever was true at sign-in until the next launch.
+  ///
+  /// A failure is ignored on purpose: this only ever refines what is already
+  /// on screen, so it must never sign anybody out or show an error.
+  Future<void> refreshUser() async {
+    if (state is! SessionSignedIn) return;
+
+    final result = await ref.read(authRepositoryProvider).me();
+
+    if (state is! SessionSignedIn) return;
+
+    result.when(
+      success: (user) => state = SessionSignedIn(user),
+      error: (_) {},
+    );
+  }
 
   Future<void> signOut() async {
     await ref.read(authRepositoryProvider).logout();

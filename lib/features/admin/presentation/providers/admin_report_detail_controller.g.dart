@@ -7,7 +7,7 @@ part of 'admin_report_detail_controller.dart';
 // **************************************************************************
 
 String _$adminReportDetailControllerHash() =>
-    r'dc009a766f7e264ba96cbec6ab67bfc2ce9ee45e';
+    r'5dc4ccb785a313425420d45a2e358a75a7875021';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -7,7 +7,7 @@ part of 'admin_settings_controller.dart';
 // **************************************************************************
 
 String _$adminSettingsControllerHash() =>
-    r'56baa86b0aa7789a7917c483044e3b03fe830777';
+    r'e122b001de3a7a9d434ccf55c027f19e2ef50306';
 
 /// See also [AdminSettingsController].
 @ProviderFor(AdminSettingsController)

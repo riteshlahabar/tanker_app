@@ -50,7 +50,7 @@ class DriverHomeScreen extends ConsumerWidget {
               children: [
                 _statTile('Assigned', '${summary.todayAssigned}'),
                 _statTile('Delivered', '${summary.todayDelivered}'),
-                _statTile('Earning', '₹ ${summary.todayEarning.toStringAsFixed(0)}'),
+                _statTile('Tankers', '${summary.todayTankers}'),
               ],
             ),
           ],

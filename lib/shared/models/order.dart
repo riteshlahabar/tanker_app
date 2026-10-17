@@ -37,10 +37,11 @@ class Order {
     this.driverName,
     this.tankerNumber,
     this.spotName,
-    this.quantityLitres,
+    this.tankerCount,
     this.deliverySlot,
     this.notes,
     this.cancelReason,
+    this.isScheduled = false,
     this.driver,
     this.timeline = const [],
   });
@@ -60,10 +61,19 @@ class Order {
   final String? spotName;
 
   // Detail-only.
-  final int? quantityLitres;
+  final int? tankerCount;
   final String? deliverySlot;
   final String? notes;
   final String? cancelReason;
+
+  /// This delivery came from a standing order. Detail-only, so a list row
+  /// always reads false.
+  final bool isScheduled;
+
+  /// "1 tanker" / "3 tankers" — water is sold by the tanker-load, so this is
+  /// how every screen names the quantity. Here rather than in each screen
+  /// because all three roles show the same line.
+  String get tankerLabel => '$tankerCount tanker${tankerCount == 1 ? '' : 's'}';
   final OrderDriver? driver;
   final List<OrderStatusLogEntry> timeline;
 
@@ -81,10 +91,11 @@ class Order {
         driverName: JsonRead.asStringOrNull(json['driver_name']),
         tankerNumber: JsonRead.asStringOrNull(json['tanker_number']),
         spotName: JsonRead.asStringOrNull(json['spot_name']),
-        quantityLitres: JsonRead.asIntOrNull(json['quantity_litres']),
+        tankerCount: JsonRead.asIntOrNull(json['tanker_count']),
         deliverySlot: JsonRead.asStringOrNull(json['delivery_slot']),
         notes: JsonRead.asStringOrNull(json['notes']),
         cancelReason: JsonRead.asStringOrNull(json['cancel_reason']),
+        isScheduled: JsonRead.asBool(json['is_scheduled'], fallback: false),
         driver: json['driver'] is Map<String, dynamic>
             ? OrderDriver.fromJson(json['driver'] as Map<String, dynamic>)
             : null,

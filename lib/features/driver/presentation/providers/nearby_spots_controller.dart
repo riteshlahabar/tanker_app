@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:geolocator/geolocator.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../../../shared/models/spot.dart';
 import 'driver_providers.dart';
 
@@ -33,7 +32,7 @@ class NearbySpotsState {
 class NearbySpotsController extends _$NearbySpotsController {
   @override
   NearbySpotsState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const NearbySpotsState();
   }

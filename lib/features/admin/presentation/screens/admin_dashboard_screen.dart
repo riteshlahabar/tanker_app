@@ -41,8 +41,8 @@ class AdminDashboardScreen extends ConsumerWidget {
             value: '₹ ${dashboard.revenueToday.toStringAsFixed(0)}',
           ),
           StatTile(
-            label: "Drivers' earning today",
-            value: '₹ ${dashboard.driverEarningToday.toStringAsFixed(0)}',
+            label: 'Tankers delivered today',
+            value: '${dashboard.tankersDeliveredToday}',
           ),
         ],
       ),

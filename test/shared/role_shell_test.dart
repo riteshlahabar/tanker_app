@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tanker_app/core/theme/app_theme.dart';
 import 'package:tanker_app/shared/models/nav_tab.dart';
@@ -23,10 +24,14 @@ void main() {
       );
 
   Future<void> pumpShell(WidgetTester tester, {Widget? drawer}) async {
+    // The shell keeps its selected tab in a provider now, so that a pushed
+    // screen can draw the same bottom bar — hence the scope.
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppThemeData.lightTheme,
-        home: RoleShell(tabs: tabs, drawer: drawer),
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppThemeData.lightTheme,
+          home: RoleShell(tabs: tabs, drawer: drawer),
+        ),
       ),
     );
     await tester.pumpAndSettle();

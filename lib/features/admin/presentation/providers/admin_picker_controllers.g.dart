@@ -7,7 +7,7 @@ part of 'admin_picker_controllers.dart';
 // **************************************************************************
 
 String _$driverPickerControllerHash() =>
-    r'1a99108af42c5c0957a348ed219a1fbea0f85a86';
+    r'e4efdccb46629e1a4622e10538423a6adedf7300';
 
 /// Search-as-you-type for the Assign sheet's driver field. A short debounce
 /// keeps a fast typist from firing a request per keystroke.

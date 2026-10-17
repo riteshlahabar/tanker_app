@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_customer.dart';
 import '../providers/admin_customers_controller.dart';
 import 'customer_form_screen.dart';
@@ -132,6 +133,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         onPressed: () => _openForm(),
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

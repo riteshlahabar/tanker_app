@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_tanker.dart';
 import '../providers/admin_tankers_controller.dart';
 import 'tanker_form_screen.dart';
@@ -131,6 +132,7 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
         onPressed: () => _openForm(),
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

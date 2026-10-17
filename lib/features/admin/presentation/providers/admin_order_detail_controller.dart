@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/network/api_result.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../../../shared/models/order.dart';
 import 'admin_providers.dart';
 
@@ -30,7 +29,7 @@ class AdminOrderDetailState {
 class AdminOrderDetailController extends _$AdminOrderDetailController {
   @override
   AdminOrderDetailState build(int orderId) {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const AdminOrderDetailState();
   }
@@ -48,6 +47,14 @@ class AdminOrderDetailController extends _$AdminOrderDetailController {
 
   Future<String?> assign({required int driverId, int? spotId}) =>
       _act(() => ref.read(adminOrderRepositoryProvider).assign(orderId, driverId: driverId, spotId: spotId));
+
+  Future<String?> reassign({required int driverId, int? spotId, String? reason}) =>
+      _act(() => ref.read(adminOrderRepositoryProvider).reassign(
+            orderId,
+            driverId: driverId,
+            spotId: spotId,
+            reason: reason,
+          ));
 
   Future<String?> cancel(String reason) =>
       _act(() => ref.read(adminOrderRepositoryProvider).cancel(orderId, reason));

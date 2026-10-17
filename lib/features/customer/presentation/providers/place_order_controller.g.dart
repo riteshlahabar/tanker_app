@@ -7,7 +7,7 @@ part of 'place_order_controller.dart';
 // **************************************************************************
 
 String _$placeOrderControllerHash() =>
-    r'ed4ecb257006927f2c51a54d3faf8e7bd39a93a9';
+    r'8c9b03967213f0fa3315ee31a92893cd75e5c18b';
 
 /// See also [PlaceOrderController].
 @ProviderFor(PlaceOrderController)

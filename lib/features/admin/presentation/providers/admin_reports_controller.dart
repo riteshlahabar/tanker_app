@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../domain/admin_report_definition.dart';
 import 'admin_providers.dart';
 
@@ -20,7 +19,7 @@ class AdminReportsState {
 class AdminReportsController extends _$AdminReportsController {
   @override
   AdminReportsState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const AdminReportsState();
   }

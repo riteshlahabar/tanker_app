@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import 'admin_providers.dart';
 
 part 'admin_settings_controller.g.dart';
@@ -25,7 +24,7 @@ class AdminSettingsState {
 class AdminSettingsController extends _$AdminSettingsController {
   @override
   AdminSettingsState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const AdminSettingsState();
   }

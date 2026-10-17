@@ -8,9 +8,9 @@ import '../providers/my_orders_controller.dart';
 import '../providers/my_schedule_controller.dart';
 import '../widgets/home_order_summary_card.dart';
 import '../widgets/home_schedule_card.dart';
+import 'book_tanker_screen.dart';
 import 'my_deliveries_screen.dart';
 import 'order_detail_screen.dart';
-import 'place_order_screen.dart';
 
 class CustomerHomeScreen extends ConsumerWidget {
   const CustomerHomeScreen({super.key});
@@ -61,7 +61,7 @@ class CustomerHomeScreen extends ConsumerWidget {
                 label: 'Book a Tanker',
                 icon: Icons.add_circle_outline,
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const PlaceOrderScreen()),
+                  MaterialPageRoute(builder: (_) => const BookTankerScreen()),
                 ),
               ),
             ),

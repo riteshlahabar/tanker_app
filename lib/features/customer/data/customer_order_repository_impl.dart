@@ -33,7 +33,7 @@ class CustomerOrderRepositoryImpl implements CustomerOrderRepository {
     required String deliveryAddress,
     required DateTime deliveryDate,
     int? deliverySlotId,
-    int? quantityLitres,
+    int? tankerCount,
     String? notes,
   }) =>
       _client.post<Order>(
@@ -42,7 +42,7 @@ class CustomerOrderRepositoryImpl implements CustomerOrderRepository {
           'delivery_address': deliveryAddress,
           'delivery_date': _dateFormat.format(deliveryDate),
           'delivery_slot_id': ?deliverySlotId,
-          'quantity_litres': ?quantityLitres,
+          'tanker_count': ?tankerCount,
           if (notes != null && notes.isNotEmpty) 'notes': notes,
         },
         parse: (data) => Order.fromJson(JsonRead.asMap(data)),

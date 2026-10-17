@@ -7,7 +7,7 @@ part of 'admin_customers_controller.dart';
 // **************************************************************************
 
 String _$adminCustomersControllerHash() =>
-    r'535f6dfdf658e5eb6126af0a93e46c56bf522d0a';
+    r'bb5a34dc5a3b35955b87e812cd67601846220170';
 
 /// See also [AdminCustomersController].
 @ProviderFor(AdminCustomersController)

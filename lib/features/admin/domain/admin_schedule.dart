@@ -12,7 +12,7 @@ class AdminSchedule {
     this.customerName,
     this.customerMobile,
     this.weekdays,
-    this.quantityLitres,
+    this.tankerCount,
     this.orderAmount,
     this.deliverySlotId,
     this.deliverySlot,
@@ -38,8 +38,12 @@ class AdminSchedule {
   final List<int>? weekdays;
   final String pattern;
 
-  final int? quantityLitres;
+  final int? tankerCount;
   final double? orderAmount;
+
+  /// "1 tanker per delivery" / "3 tankers per delivery".
+  String get tankerLabel =>
+      '$tankerCount tanker${tankerCount == 1 ? '' : 's'} per delivery';
 
   final int? deliverySlotId;
   final String? deliverySlot;
@@ -71,7 +75,7 @@ class AdminSchedule {
             ? (json['weekdays'] as List).map(JsonRead.asInt).toList()
             : null,
         pattern: JsonRead.asString(json['pattern']),
-        quantityLitres: JsonRead.asIntOrNull(json['quantity_litres']),
+        tankerCount: JsonRead.asIntOrNull(json['tanker_count']),
         orderAmount: JsonRead.asDoubleOrNull(json['order_amount']),
         deliverySlotId: JsonRead.asIntOrNull(json['delivery_slot_id']),
         deliverySlot: JsonRead.asStringOrNull(json['delivery_slot']),

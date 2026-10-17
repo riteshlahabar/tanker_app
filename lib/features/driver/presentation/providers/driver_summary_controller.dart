@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../domain/driver_summary.dart';
 import 'driver_providers.dart';
 
@@ -20,7 +19,7 @@ class DriverSummaryState {
 class DriverSummaryController extends _$DriverSummaryController {
   @override
   DriverSummaryState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const DriverSummaryState();
   }

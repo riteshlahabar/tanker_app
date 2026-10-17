@@ -7,7 +7,7 @@ part of 'admin_orders_controller.dart';
 // **************************************************************************
 
 String _$adminOrdersControllerHash() =>
-    r'deb27a0d3223a9a808cbb799b41f856b916e9640';
+    r'aa040565994b01958f062e445d78b5a7f3bfa40d';
 
 /// The admin's Orders list — same infinite-scroll shape as the customer's and
 /// driver's own order lists, with a filter the admin can change at any time.

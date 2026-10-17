@@ -7,7 +7,7 @@ part of 'my_schedule_controller.dart';
 // **************************************************************************
 
 String _$myScheduleControllerHash() =>
-    r'782fa7324d7b508a0e7f7cdb66fb28b975e8ee1d';
+    r'add28c8f052cce38f10b46de9fbb1c9f44df45b4';
 
 /// Backs both the Home schedule card and the My Deliveries screen, so a skip
 /// made on one is reflected on the other without a second fetch.

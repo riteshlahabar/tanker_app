@@ -7,7 +7,7 @@ part of 'admin_delivery_slots_controller.dart';
 // **************************************************************************
 
 String _$adminDeliverySlotsControllerHash() =>
-    r'dbaf3e1c88d24d610dcdcd52e413f4f535b5f678';
+    r'cdfece53b16eb796a2c2f8fd9afb7acfdef3d33e';
 
 /// See also [AdminDeliverySlotsController].
 @ProviderFor(AdminDeliverySlotsController)

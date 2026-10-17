@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_driver.dart';
 import '../providers/admin_drivers_controller.dart';
 import 'driver_form_screen.dart';
@@ -130,6 +131,7 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
         onPressed: () => _openForm(),
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

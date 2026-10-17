@@ -7,7 +7,7 @@ part of 'admin_spots_controller.dart';
 // **************************************************************************
 
 String _$adminSpotsControllerHash() =>
-    r'6ecbdbc3e61c327ad4857e14a2f867f3f20ccaf1';
+    r'8396200439cea515cea6a2d241656135aef84961';
 
 /// See also [AdminSpotsController].
 @ProviderFor(AdminSpotsController)

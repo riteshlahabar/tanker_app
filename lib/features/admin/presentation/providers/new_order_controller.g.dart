@@ -7,7 +7,7 @@ part of 'new_order_controller.dart';
 // **************************************************************************
 
 String _$newOrderControllerHash() =>
-    r'df0c00f746d3b6f5fc8aaf0c07a3ec6c3b97f248';
+    r'1f88c6ec2923815877fa97763314c8a52e50072c';
 
 /// Backs the admin's "New Order" tab — a phone order typed in by hand, so
 /// (unlike the customer's own form) the amount is a field here, not

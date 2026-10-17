@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_result.dart';
 import '../../../shared/utils/json_read.dart';
-import '../domain/driver_earnings.dart';
 import '../domain/driver_repository.dart';
+import '../domain/driver_salary.dart';
 import '../domain/driver_summary.dart';
 
 class DriverRepositoryImpl implements DriverRepository {
@@ -21,12 +21,12 @@ class DriverRepositoryImpl implements DriverRepository {
       );
 
   @override
-  Future<ApiResult<DriverEarnings>> earnings({DateTime? from, DateTime? to}) => _client.get<DriverEarnings>(
-        '/driver/earnings',
+  Future<ApiResult<DriverSalary>> salary({DateTime? from, DateTime? to}) => _client.get<DriverSalary>(
+        '/driver/salary',
         query: {
           if (from != null) 'from': _dateFormat.format(from),
           if (to != null) 'to': _dateFormat.format(to),
         },
-        parse: (data) => DriverEarnings.fromJson(JsonRead.asMap(data)),
+        parse: (data) => DriverSalary.fromJson(JsonRead.asMap(data)),
       );
 }

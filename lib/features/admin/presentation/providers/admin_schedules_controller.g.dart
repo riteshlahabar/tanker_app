@@ -7,7 +7,7 @@ part of 'admin_schedules_controller.dart';
 // **************************************************************************
 
 String _$adminSchedulesControllerHash() =>
-    r'23bb02f789ee9517da36d6788d9e6cd309632b27';
+    r'75416cb669f3cd4621381a829cb5c01ba5e3e125';
 
 /// See also [AdminSchedulesController].
 @ProviderFor(AdminSchedulesController)

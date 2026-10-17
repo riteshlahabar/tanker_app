@@ -7,7 +7,7 @@ part of 'nearby_spots_controller.dart';
 // **************************************************************************
 
 String _$nearbySpotsControllerHash() =>
-    r'9e75d55ed463e2f7cc0d3b0b7c536311d44f3e04';
+    r'45f8e2a3f50ed760f945245a807e5bf9028a067d';
 
 /// Asks the device for its position and shows the nearest spots; falls back
 /// to the full usable-spots list rather than a dead screen when location

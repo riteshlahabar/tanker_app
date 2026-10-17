@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/upcoming_date_tile.dart';
 import '../providers/admin_schedule_detail_controller.dart';
 import 'schedule_form_screen.dart';
@@ -117,8 +118,8 @@ class ScheduleDetailScreen extends ConsumerWidget {
                       _detailRow(Icons.repeat, detail.schedule.pattern),
                       if (detail.schedule.deliveryAddress != null)
                         _detailRow(Icons.location_on_outlined, detail.schedule.deliveryAddress!),
-                      if (detail.schedule.quantityLitres != null)
-                        _detailRow(Icons.water_drop_outlined, '${detail.schedule.quantityLitres} litres'),
+                      if (detail.schedule.tankerCount != null)
+                        _detailRow(Icons.water_drop_outlined, detail.schedule.tankerLabel),
                       if (detail.schedule.orderAmount != null)
                         _detailRow(Icons.currency_rupee,
                             '₹ ${detail.schedule.orderAmount!.toStringAsFixed(0)} per delivery'),
@@ -149,6 +150,7 @@ class ScheduleDetailScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 

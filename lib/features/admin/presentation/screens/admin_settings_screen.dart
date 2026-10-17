@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_settings_controller.dart';
 
 /// The six fields `UpdateSettingRequest` validates, mirroring the web
@@ -19,7 +20,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   final _whatsappNumber = TextEditingController();
   final _driverRate = TextEditingController();
   final _orderAmount = TextEditingController();
-  final _pricePerLitre = TextEditingController();
+  final _pricePerTanker = TextEditingController();
   final _reportTime = TextEditingController();
   bool _loaded = false;
 
@@ -29,7 +30,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     _whatsappNumber.dispose();
     _driverRate.dispose();
     _orderAmount.dispose();
-    _pricePerLitre.dispose();
+    _pricePerTanker.dispose();
     _reportTime.dispose();
     super.dispose();
   }
@@ -39,7 +40,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     _whatsappNumber.text = values['admin_whatsapp_number'] ?? '';
     _driverRate.text = values['default_driver_rate'] ?? '';
     _orderAmount.text = values['default_order_amount'] ?? '';
-    _pricePerLitre.text = values['price_per_litre'] ?? '';
+    _pricePerTanker.text = values['price_per_tanker'] ?? '';
     _reportTime.text = values['daily_report_time'] ?? '';
   }
 
@@ -49,7 +50,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       'admin_whatsapp_number': _whatsappNumber.text.trim(),
       'default_driver_rate': _driverRate.text.trim(),
       'default_order_amount': _orderAmount.text.trim(),
-      'price_per_litre': _pricePerLitre.text.trim(),
+      'price_per_tanker': _pricePerTanker.text.trim(),
       'daily_report_time': _reportTime.text.trim(),
     });
 
@@ -63,7 +64,10 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     final state = ref.watch(adminSettingsControllerProvider);
 
     if (state.loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: ShellTabBar(),
+      );
     }
 
     if (!_loaded) {
@@ -102,9 +106,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             ),
             const SizedBox(height: 12),
             AppTextField(
-              controller: _pricePerLitre,
-              label: 'Price per litre',
-              hint: '0 = flat default order amount instead',
+              controller: _pricePerTanker,
+              label: 'Price per tanker (₹)',
+              hint: 'Used when a tanker has no rate of its own; 0 = flat amount',
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
@@ -122,6 +126,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

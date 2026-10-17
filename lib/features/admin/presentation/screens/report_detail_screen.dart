@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/stat_tile.dart';
 import '../../domain/admin_report_definition.dart';
 import '../../domain/admin_tanker.dart';
@@ -239,6 +240,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

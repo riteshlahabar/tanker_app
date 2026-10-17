@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/router/shell_tabs_controller.dart';
 import '../models/nav_tab.dart';
-import 'app_bottom_nav.dart';
+import 'shell_tab_bar.dart';
 
 /// The root route for a signed-in role: an app bar, the tab bodies in an
 /// IndexedStack, and the bottom bar.
@@ -17,9 +19,13 @@ import 'app_bottom_nav.dart';
 ///  * hardware back on a tab other than the first returns to the first tab;
 ///  * hardware back on the first tab asks before leaving the app.
 ///
+/// Which tab is selected lives in [shellTabsProvider] rather than in this
+/// State, so a pushed screen can draw the same bar and move the shell with it
+/// — the owner asked for the bar on every screen, not only on the shell.
+///
 /// A drawer is passed in only by the admin shell; driver and customer shells
 /// leave it null and so have none.
-class RoleShell extends StatefulWidget {
+class RoleShell extends ConsumerStatefulWidget {
   const RoleShell({
     super.key,
     required this.tabs,
@@ -30,17 +36,24 @@ class RoleShell extends StatefulWidget {
   final Widget? drawer;
 
   @override
-  State<RoleShell> createState() => _RoleShellState();
+  ConsumerState<RoleShell> createState() => _RoleShellState();
 }
 
-class _RoleShellState extends State<RoleShell> {
-  int _index = 0;
+class _RoleShellState extends ConsumerState<RoleShell> {
+  @override
+  void initState() {
+    super.initState();
 
-  bool get _onHomeTab => _index == 0;
+    // Registered here rather than in build: writing a provider's state while
+    // building is the fault that left every screen spinning once already.
+    Future<void>.microtask(
+      () => ref.read(shellTabsProvider.notifier).register(widget.tabs),
+    );
+  }
 
   Future<void> _handleBack() async {
-    if (!_onHomeTab) {
-      setState(() => _index = 0);
+    if (!ref.read(shellTabsProvider).onHomeTab) {
+      ref.read(shellTabsProvider.notifier).goHome();
 
       return;
     }
@@ -70,7 +83,10 @@ class _RoleShellState extends State<RoleShell> {
 
   @override
   Widget build(BuildContext context) {
-    final tab = widget.tabs[_index];
+    // The provider is empty for the first frame, before initState's microtask
+    // has run, so the widget's own tabs are what this reads.
+    final index = ref.watch(shellTabsProvider).index.clamp(0, widget.tabs.length - 1);
+    final tab = widget.tabs[index];
 
     return PopScope(
       // Never let the framework pop the shell itself; _handleBack decides.
@@ -85,14 +101,10 @@ class _RoleShellState extends State<RoleShell> {
         ),
         drawer: widget.drawer,
         body: IndexedStack(
-          index: _index,
+          index: index,
           children: widget.tabs.map((t) => t.body).toList(growable: false),
         ),
-        bottomNavigationBar: AppBottomNav(
-          tabs: widget.tabs,
-          currentIndex: _index,
-          onTap: (index) => setState(() => _index = index),
-        ),
+        bottomNavigationBar: ShellTabBar(tabs: widget.tabs),
       ),
     );
   }

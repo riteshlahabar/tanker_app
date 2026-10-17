@@ -9,6 +9,7 @@ class AdminTanker {
     required this.label,
     required this.status,
     this.capacityLitres,
+    this.tankerRate,
     this.modelYear,
     this.rcNumber,
     this.insuranceExpiry,
@@ -21,6 +22,10 @@ class AdminTanker {
   final String label;
   final bool status;
   final int? capacityLitres;
+
+  /// What one tanker-load from this vehicle costs. Null falls through to the
+  /// price_per_tanker setting.
+  final double? tankerRate;
   final int? modelYear;
   final String? rcNumber;
   final DateTime? insuranceExpiry;
@@ -33,6 +38,7 @@ class AdminTanker {
         label: JsonRead.asString(json['label']),
         status: JsonRead.asBool(json['status'], fallback: true),
         capacityLitres: JsonRead.asIntOrNull(json['capacity_litres']),
+        tankerRate: JsonRead.asDoubleOrNull(json['tanker_rate']),
         modelYear: JsonRead.asIntOrNull(json['model_year']),
         rcNumber: JsonRead.asStringOrNull(json['rc_number']),
         insuranceExpiry: JsonRead.asDate(json['insurance_expiry']),

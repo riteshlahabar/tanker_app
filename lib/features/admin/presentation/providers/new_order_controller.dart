@@ -30,7 +30,7 @@ class NewOrderController extends _$NewOrderController {
     double? latitude,
     double? longitude,
     int? deliverySlotId,
-    int? quantityLitres,
+    int? tankerCount,
     String? notes,
   }) async {
     state = const NewOrderState(submitting: true);
@@ -43,7 +43,7 @@ class NewOrderController extends _$NewOrderController {
           latitude: latitude,
           longitude: longitude,
           deliverySlotId: deliverySlotId,
-          quantityLitres: quantityLitres,
+          tankerCount: tankerCount,
           notes: notes,
         );
 

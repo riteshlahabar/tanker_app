@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../domain/admin_schedule_detail.dart';
 import 'admin_providers.dart';
 
@@ -42,7 +41,7 @@ class AdminScheduleDetailState {
 class AdminScheduleDetailController extends _$AdminScheduleDetailController {
   @override
   AdminScheduleDetailState build(int scheduleId) {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const AdminScheduleDetailState();
   }

@@ -9,7 +9,7 @@ class AdminDriver {
     required this.lastName,
     required this.fullName,
     required this.mobile,
-    required this.perDeliveryRate,
+    required this.monthlySalary,
     required this.status,
     this.address,
     this.tanker,
@@ -21,7 +21,7 @@ class AdminDriver {
   final String fullName;
   final String mobile;
   final String? address;
-  final double perDeliveryRate;
+  final double monthlySalary;
   final bool status;
   final TankerInfo? tanker;
 
@@ -32,7 +32,7 @@ class AdminDriver {
         fullName: JsonRead.asString(json['full_name']),
         mobile: JsonRead.asString(json['mobile']),
         address: JsonRead.asStringOrNull(json['address']),
-        perDeliveryRate: JsonRead.asDouble(json['per_delivery_rate']),
+        monthlySalary: JsonRead.asDouble(json['monthly_salary']),
         status: JsonRead.asBool(json['status'], fallback: true),
         tanker: json['tanker'] is Map<String, dynamic>
             ? TankerInfo.fromJson(json['tanker'] as Map<String, dynamic>)

@@ -1,23 +1,22 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../domain/driver_earnings.dart';
+import '../../../../core/providers/first_load.dart';
+import '../../domain/driver_salary.dart';
 import 'driver_providers.dart';
 
-part 'driver_earnings_controller.g.dart';
+part 'driver_salary_controller.g.dart';
 
-class DriverEarningsState {
-  const DriverEarningsState({
-    this.earnings,
+class DriverSalaryState {
+  const DriverSalaryState({
+    this.salary,
     this.loading = true,
     this.error,
     this.from,
     this.to,
   });
 
-  final DriverEarnings? earnings;
+  final DriverSalary? salary;
   final bool loading;
   final Failure? error;
 
@@ -26,15 +25,15 @@ class DriverEarningsState {
   final DateTime? from;
   final DateTime? to;
 
-  DriverEarningsState copyWith({
-    DriverEarnings? earnings,
+  DriverSalaryState copyWith({
+    DriverSalary? salary,
     bool? loading,
     Failure? error,
     DateTime? from,
     DateTime? to,
   }) =>
-      DriverEarningsState(
-        earnings: earnings ?? this.earnings,
+      DriverSalaryState(
+        salary: salary ?? this.salary,
         loading: loading ?? this.loading,
         error: error,
         from: from ?? this.from,
@@ -43,21 +42,23 @@ class DriverEarningsState {
 }
 
 @riverpod
-class DriverEarningsController extends _$DriverEarningsController {
+class DriverSalaryController extends _$DriverSalaryController {
   @override
-  DriverEarningsState build() {
-    unawaited(refresh());
+  DriverSalaryState build() {
+    // Never kick the first fetch off inside build() — reading state before it
+    // returns throws, and an unawaited throw is swallowed silently.
+    FirstLoad.after(ref, refresh);
 
-    return const DriverEarningsState();
+    return const DriverSalaryState();
   }
 
   Future<void> refresh() async {
     state = state.copyWith(loading: true, error: null);
 
-    final result = await ref.read(driverRepositoryProvider).earnings(from: state.from, to: state.to);
+    final result = await ref.read(driverRepositoryProvider).salary(from: state.from, to: state.to);
 
     state = result.when(
-      success: (earnings) => state.copyWith(earnings: earnings, loading: false),
+      success: (salary) => state.copyWith(salary: salary, loading: false),
       error: (failure) => state.copyWith(loading: false, error: failure),
     );
   }

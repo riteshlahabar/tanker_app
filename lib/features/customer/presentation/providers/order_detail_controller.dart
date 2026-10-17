@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../../../shared/models/order.dart';
 import 'customer_order_providers.dart';
 
@@ -29,7 +28,7 @@ class OrderDetailState {
 class OrderDetailController extends _$OrderDetailController {
   @override
   OrderDetailState build(int orderId) {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const OrderDetailState();
   }

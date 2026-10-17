@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_schedules_controller.dart';
 import 'schedule_detail_screen.dart';
 import 'schedule_form_screen.dart';
@@ -185,6 +186,7 @@ class _ScheduleListScreenState extends ConsumerState<ScheduleListScreen> {
         onPressed: _openCreate,
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

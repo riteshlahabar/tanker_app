@@ -17,6 +17,7 @@ class AuthUser {
     this.address,
     this.latitude,
     this.longitude,
+    this.monthlySalary,
   });
 
   final int id;
@@ -39,6 +40,11 @@ class AuthUser {
   final double? latitude;
   final double? longitude;
 
+  /// What a driver is paid each month. Null for an admin or a customer, which
+  /// is why it is nullable rather than zero — the Profile screen is shared by
+  /// all three roles and has to tell "not a driver" from "paid nothing".
+  final double? monthlySalary;
+
   factory AuthUser.fromJson(Map<String, dynamic> json) => AuthUser(
         id: JsonRead.asInt(json['id']),
         firstName: JsonRead.asString(json['first_name']),
@@ -52,6 +58,7 @@ class AuthUser {
         address: JsonRead.asStringOrNull(json['address']),
         latitude: JsonRead.asDoubleOrNull(json['latitude']),
         longitude: JsonRead.asDoubleOrNull(json['longitude']),
+        monthlySalary: JsonRead.asDoubleOrNull(json['monthly_salary']),
       );
 
   /// Initials for the avatar circle, which is all the design shows.

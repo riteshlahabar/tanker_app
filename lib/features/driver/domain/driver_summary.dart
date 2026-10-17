@@ -7,7 +7,7 @@ class DriverSummary {
     required this.fullName,
     required this.todayAssigned,
     required this.todayDelivered,
-    required this.todayEarning,
+    required this.todayTankers,
     this.tanker,
   });
 
@@ -15,7 +15,10 @@ class DriverSummary {
   final TankerInfo? tanker;
   final int todayAssigned;
   final int todayDelivered;
-  final double todayEarning;
+
+  /// Tanker-loads delivered today, not money: a salaried driver earns nothing
+  /// per order, so there is no daily earning to show.
+  final int todayTankers;
 
   factory DriverSummary.fromJson(Map<String, dynamic> json) {
     final driver = JsonRead.asMap(json['driver']);
@@ -28,7 +31,7 @@ class DriverSummary {
           : null,
       todayAssigned: JsonRead.asInt(today['assigned']),
       todayDelivered: JsonRead.asInt(today['delivered']),
-      todayEarning: JsonRead.asDouble(today['earning']),
+      todayTankers: JsonRead.asInt(today['tankers']),
     );
   }
 }

@@ -7,7 +7,7 @@ part of 'admin_dashboard_controller.dart';
 // **************************************************************************
 
 String _$adminDashboardControllerHash() =>
-    r'fdff5dc59882e16c778a6fc4a35f45edd46ffbb1';
+    r'2425566ea6e56c641ccc70266a0cb98de316d816';
 
 /// See also [AdminDashboardController].
 @ProviderFor(AdminDashboardController)

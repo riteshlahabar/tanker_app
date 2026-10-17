@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../domain/my_schedule.dart';
 import 'customer_schedule_providers.dart';
 
@@ -40,7 +39,7 @@ class MyScheduleState {
 class MyScheduleController extends _$MyScheduleController {
   @override
   MyScheduleState build() {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const MyScheduleState();
   }

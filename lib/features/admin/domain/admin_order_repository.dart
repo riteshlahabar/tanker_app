@@ -17,11 +17,20 @@ abstract interface class AdminOrderRepository {
     double? latitude,
     double? longitude,
     int? deliverySlotId,
-    int? quantityLitres,
+    int? tankerCount,
     String? notes,
   });
 
   Future<ApiResult<Order>> assign(int orderId, {required int driverId, int? spotId});
+
+  /// Hand an already-assigned order to a different driver — the absent-driver
+  /// case. The server refuses it once the tanker is being filled.
+  Future<ApiResult<Order>> reassign(
+    int orderId, {
+    required int driverId,
+    int? spotId,
+    String? reason,
+  });
 
   Future<ApiResult<Order>> cancel(int orderId, String reason);
 }

@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../domain/driver_earnings.dart';
-import '../providers/driver_earnings_controller.dart';
+import '../../domain/driver_salary.dart';
+import '../providers/driver_salary_controller.dart';
 
-/// Earnings tab body — today's figures plus the same for a date range,
-/// straight from `GET /api/driver/earnings`.
-class DriverEarningsScreen extends ConsumerWidget {
-  const DriverEarningsScreen({super.key});
+/// The driver's own delivery figures — today's, plus the same for a date
+/// range — from `GET /api/driver/salary`.
+///
+/// No money per delivery: drivers are salaried. The salary itself is a
+/// read-only line on the Profile tab, not here, so one screen owns it.
+class DriverDeliverySummaryScreen extends ConsumerWidget {
+  const DriverDeliverySummaryScreen({super.key});
 
   static final _dateFormat = DateFormat('d MMM yyyy');
 
@@ -22,55 +25,55 @@ class DriverEarningsScreen extends ConsumerWidget {
 
     if (picked == null) return;
 
-    await ref.read(driverEarningsControllerProvider.notifier).setRange(picked.start, picked.end);
+    await ref.read(driverSalaryControllerProvider.notifier).setRange(picked.start, picked.end);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(driverEarningsControllerProvider);
-    final earnings = state.earnings;
+    final state = ref.watch(driverSalaryControllerProvider);
+    final salary = state.salary;
 
-    if (state.loading && earnings == null) {
+    if (state.loading && salary == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (earnings == null) {
-      return Center(child: Text(state.error?.message ?? 'Could not load earnings.'));
+    if (salary == null) {
+      return Center(child: Text(state.error?.message ?? 'Could not load your deliveries.'));
     }
 
     return RefreshIndicator(
-      onRefresh: () => ref.read(driverEarningsControllerProvider.notifier).refresh(),
+      onRefresh: () => ref.read(driverSalaryControllerProvider.notifier).refresh(),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const Text('Today', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 8),
-          _totalsRow(earnings.today),
+          _totalsRow(salary.today),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${_dateFormat.format(earnings.from)} – ${_dateFormat.format(earnings.to)}',
+                '${_dateFormat.format(salary.from)} – ${_dateFormat.format(salary.to)}',
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
               TextButton(
-                onPressed: () => _pickRange(context, ref, earnings.from, earnings.to),
+                onPressed: () => _pickRange(context, ref, salary.from, salary.to),
                 child: const Text('Change range'),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          _totalsRow(earnings.range),
+          _totalsRow(salary.range),
         ],
       ),
     );
   }
 
-  Widget _totalsRow(EarningsTotals totals) => Row(
+  Widget _totalsRow(DeliveryTotals totals) => Row(
         children: [
           _statTile('Delivered', '${totals.delivered}'),
-          _statTile('Earning', '₹ ${totals.earning.toStringAsFixed(0)}'),
+          _statTile('Tankers', '${totals.tankers}'),
           _statTile('Order value', '₹ ${totals.orderValue.toStringAsFixed(0)}'),
         ],
       );

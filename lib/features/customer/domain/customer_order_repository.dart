@@ -14,7 +14,7 @@ abstract interface class CustomerOrderRepository {
     required String deliveryAddress,
     required DateTime deliveryDate,
     int? deliverySlotId,
-    int? quantityLitres,
+    int? tankerCount,
     String? notes,
   });
 

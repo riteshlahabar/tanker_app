@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_driver.dart';
 import '../../domain/admin_tanker.dart';
 import '../providers/admin_driver_form_controller.dart';
@@ -25,8 +26,8 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
   late final _mobile = TextEditingController(text: widget.existing?.mobile);
   final _password = TextEditingController();
   final _passwordConfirmation = TextEditingController();
-  late final _rate =
-      TextEditingController(text: widget.existing?.perDeliveryRate.toStringAsFixed(0) ?? '');
+  late final _salary =
+      TextEditingController(text: widget.existing?.monthlySalary.toStringAsFixed(0) ?? '');
   late final _address = TextEditingController(text: widget.existing?.address);
   late bool _status = widget.existing?.status ?? true;
   int? _tankerId;
@@ -56,7 +57,7 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
     _mobile.dispose();
     _password.dispose();
     _passwordConfirmation.dispose();
-    _rate.dispose();
+    _salary.dispose();
     _address.dispose();
     super.dispose();
   }
@@ -72,7 +73,7 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
             if (_password.text.isNotEmpty) 'password': _password.text,
             if (_password.text.isNotEmpty) 'password_confirmation': _passwordConfirmation.text,
             'tanker_id': ?_tankerId,
-            'per_delivery_rate': double.tryParse(_rate.text.trim()) ?? 0,
+            'monthly_salary': double.tryParse(_salary.text.trim()) ?? 0,
             'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
             'status': _status,
           },
@@ -182,8 +183,8 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
               ),
               const SizedBox(height: 12),
               AppTextField(
-                controller: _rate,
-                label: 'Per-delivery rate',
+                controller: _salary,
+                label: 'Monthly salary (₹)',
                 hint: '',
                 keyboardType: TextInputType.number,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
@@ -211,6 +212,7 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

@@ -7,7 +7,7 @@ part of 'admin_schedule_detail_controller.dart';
 // **************************************************************************
 
 String _$adminScheduleDetailControllerHash() =>
-    r'd995922d72487122a73e9d06ac293d4eb783b8d3';
+    r'85e0deaf3e17486a2ea8b92b1c7f9ba30f9ba0d2';
 
 /// Copied from Dart SDK
 class _SystemHash {

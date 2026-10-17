@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../../../shared/models/order.dart';
 import '../../../../shared/models/paginated.dart';
 import 'driver_providers.dart';
@@ -44,7 +43,7 @@ class DriverOrdersState {
 class DriverOrdersController extends _$DriverOrdersController {
   @override
   DriverOrdersState build(bool openOnly) {
-    unawaited(refresh());
+    FirstLoad.after(ref, refresh);
 
     return const DriverOrdersState();
   }

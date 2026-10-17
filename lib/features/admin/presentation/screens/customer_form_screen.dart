@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_customer.dart';
 import '../providers/admin_customer_form_controller.dart';
 import '../providers/admin_providers.dart';
@@ -205,6 +206,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }

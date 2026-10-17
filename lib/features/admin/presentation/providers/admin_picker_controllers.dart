@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../../../core/providers/first_load.dart';
 import '../../domain/customer_option.dart';
 import '../../domain/driver_option.dart';
 import 'admin_providers.dart';
@@ -27,7 +28,7 @@ class DriverPickerController extends _$DriverPickerController {
   PickerState<DriverOption> build() {
     ref.onDispose(() => _debounce?.cancel());
 
-    unawaited(_search(''));
+    FirstLoad.after(ref, () => _search(''));
 
     return const PickerState<DriverOption>();
   }

@@ -23,7 +23,7 @@ class PlaceOrderController extends _$PlaceOrderController {
     required String deliveryAddress,
     required DateTime deliveryDate,
     int? deliverySlotId,
-    int? quantityLitres,
+    int? tankerCount,
     String? notes,
   }) async {
     state = const PlaceOrderState(submitting: true);
@@ -32,7 +32,7 @@ class PlaceOrderController extends _$PlaceOrderController {
           deliveryAddress: deliveryAddress,
           deliveryDate: deliveryDate,
           deliverySlotId: deliverySlotId,
-          quantityLitres: quantityLitres,
+          tankerCount: tankerCount,
           notes: notes,
         );
 

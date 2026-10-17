@@ -7,7 +7,7 @@ part of 'admin_drivers_controller.dart';
 // **************************************************************************
 
 String _$adminDriversControllerHash() =>
-    r'4290822e07c60887c5831690208771cc483f3e59';
+    r'ff05b9fc4399d6dbd50724156a3c5989649feebb';
 
 /// See also [AdminDriversController].
 @ProviderFor(AdminDriversController)

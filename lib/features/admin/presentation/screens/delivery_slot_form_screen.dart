@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_delivery_slot.dart';
 import '../providers/admin_delivery_slot_form_controller.dart';
 import '../providers/admin_providers.dart';
@@ -201,6 +202,7 @@ class _DeliverySlotFormScreenState extends ConsumerState<DeliverySlotFormScreen>
           ),
         ),
       ),
+      bottomNavigationBar: const ShellTabBar(),
     );
   }
 }
