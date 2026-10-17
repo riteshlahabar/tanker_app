@@ -1,30 +1,30 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'driver_salary_controller.dart';
+part of 'driver_expenses_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$driverSalaryControllerHash() =>
-    r'7d4653af6c5070c78765261e939dcd311d2d785a';
+String _$driverExpensesControllerHash() =>
+    r'48713b3961b834865b0b92e27e2e0486ff7de56b';
 
-/// See also [DriverSalaryController].
-@ProviderFor(DriverSalaryController)
-final driverSalaryControllerProvider =
+/// See also [DriverExpensesController].
+@ProviderFor(DriverExpensesController)
+final driverExpensesControllerProvider =
     AutoDisposeNotifierProvider<
-      DriverSalaryController,
-      DriverSalaryState
+      DriverExpensesController,
+      DriverExpensesState
     >.internal(
-      DriverSalaryController.new,
-      name: r'driverSalaryControllerProvider',
+      DriverExpensesController.new,
+      name: r'driverExpensesControllerProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$driverSalaryControllerHash,
+          : _$driverExpensesControllerHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$DriverSalaryController = AutoDisposeNotifier<DriverSalaryState>;
+typedef _$DriverExpensesController = AutoDisposeNotifier<DriverExpensesState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

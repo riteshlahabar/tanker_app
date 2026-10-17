@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/colors.dart';
+import '../../../../shared/widgets/app_picker_field.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
@@ -25,8 +27,14 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
   late final _vehicleNumber = TextEditingController(text: widget.existing?.vehicleNumber);
   late final _capacity =
       TextEditingController(text: widget.existing?.capacityLitres?.toString() ?? '');
-  late final _rate =
-      TextEditingController(text: widget.existing?.tankerRate?.toStringAsFixed(2) ?? '');
+  // Blank for a null *or* zero rate, matching TankerListTile: both mean "no
+  // rate of its own", so pre-filling 0.00 would contradict the card that
+  // just said "Rate not set".
+  late final _rate = TextEditingController(
+    text: (widget.existing?.tankerRate ?? 0) == 0
+        ? ''
+        : widget.existing!.tankerRate!.toStringAsFixed(2),
+  );
   late final _modelYear =
       TextEditingController(text: widget.existing?.modelYear?.toString() ?? '');
   late final _rcNumber = TextEditingController(text: widget.existing?.rcNumber);
@@ -121,6 +129,7 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(adminTankerFormControllerProvider);
@@ -130,77 +139,104 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Tanker' : 'Add Tanker'),
         actions: [
-          if (isEditing) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
+          if (isEditing)
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete tanker',
+              onPressed: _delete,
+            ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppTextField(
-                controller: _vehicleName,
-                label: 'Vehicle name',
-                hint: '',
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
+              // Grouped rather than one undifferentiated stack of seven
+              // fields: what identifies the vehicle, what it charges, and the
+              // paperwork are three different questions, and only the first
+              // two are required.
+              const _SectionHeading('The vehicle'),
               AppTextField(
                 controller: _vehicleNumber,
                 label: 'Vehicle number',
                 hint: 'e.g. MH12AB1234',
+                textInputAction: TextInputAction.next,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 12),
+              AppTextField(
+                controller: _vehicleName,
+                label: 'Vehicle name',
+                hint: 'What the office calls it',
+                textInputAction: TextInputAction.next,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _capacity,
+                      label: 'Capacity (L)',
+                      hint: 'Optional',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _modelYear,
+                      label: 'Model year',
+                      hint: 'Optional',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const _SectionHeading('What it charges'),
               AppTextField(
                 controller: _rate,
                 label: 'Rate per tanker (₹)',
                 hint: 'Blank uses the Price per Tanker setting',
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: _capacity,
-                label: 'Capacity (litres)',
-                hint: 'Optional — vehicle size, not the price',
-                keyboardType: TextInputType.number,
+              const SizedBox(height: 8),
+              const _Note(
+                // Capacity sits in the section above on purpose: water is sold
+                // by the load, so litres are vehicle information and have no
+                // bearing on the price.
+                'One load from this vehicle. Leave it blank and the order falls '
+                'back to the Price per Tanker setting, then to the flat default.',
               ),
-              const SizedBox(height: 12),
+              const _SectionHeading('Paperwork'),
               AppTextField(
-                controller: _modelYear,
-                label: 'Model year',
+                controller: _rcNumber,
+                label: 'RC number',
                 hint: 'Optional',
-                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
-              AppTextField(controller: _rcNumber, label: 'RC number', hint: 'Optional'),
-              const SizedBox(height: 12),
-              InkWell(
+              AppPickerField(
+                label: 'Insurance expiry',
+                hint: 'Optional',
+                icon: Icons.event_outlined,
+                value: _insuranceExpiry == null ? null : _dateFormat.format(_insuranceExpiry!),
                 onTap: _pickInsuranceExpiry,
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Insurance expiry',
-                    border: OutlineInputBorder(),
-                  ),
-                  child: Text(
-                    _insuranceExpiry == null ? 'Optional' : _dateFormat.format(_insuranceExpiry!),
-                  ),
-                ),
+                onClear: () => setState(() => _insuranceExpiry = null),
               ),
               const SizedBox(height: 12),
               AppTextField(controller: _notes, label: 'Notes', hint: 'Optional', maxLines: 2),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Active'),
+              const SizedBox(height: 20),
+              _ActiveSwitch(
                 value: _status,
                 onChanged: (value) => setState(() => _status = value),
               ),
               if (formState.failure != null) ...[
-                const SizedBox(height: 8),
-                Text(formState.failure!.message, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                _ErrorNote(formState.failure!.message),
               ],
               const SizedBox(height: 24),
               PrimaryButton(
@@ -213,6 +249,134 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
         ),
       ),
       bottomNavigationBar: const ShellTabBar(),
+    );
+  }
+}
+
+/// The same heading treatment the dashboard's sections use, so a grouped form
+/// and a grouped dashboard read as one piece of design.
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 10, left: 4),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+          color: appTextColorSecondary,
+        ),
+      ),
+    );
+  }
+}
+
+/// A quiet line under a field, for a rule the owner would otherwise have to be
+/// told once and remember.
+class _Note extends StatelessWidget {
+  const _Note(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, right: 4),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 12, color: appTextColorSecondary, height: 1.35),
+      ),
+    );
+  }
+}
+
+/// Active/inactive as a card rather than a bare SwitchListTile, and it says
+/// what being inactive actually does — a switch with one word beside it does
+/// not.
+class _ActiveSwitch extends StatelessWidget {
+  const _ActiveSwitch({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = value ? statusDeliveredColor : statusCancelledColor;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+      decoration: BoxDecoration(
+        color: appetitAppContainerColor.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value ? 'Active' : 'Inactive',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value
+                      ? 'Available to be assigned to a driver'
+                      : 'Hidden from driver assignment',
+                  style: const TextStyle(fontSize: 12, color: appTextColorSecondary),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: value, onChanged: onChanged, activeTrackColor: accent),
+        ],
+      ),
+    );
+  }
+}
+
+/// A server-side refusal, in the design's own red rather than a raw
+/// `Colors.red`, and in a tinted box so it is not mistaken for a field label.
+class _ErrorNote extends StatelessWidget {
+  const _ErrorNote(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: statusCancelledColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline, size: 18, color: statusCancelledColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(color: statusCancelledColor, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

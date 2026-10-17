@@ -6,6 +6,7 @@ import '../../data/admin_customer_repository_impl.dart';
 import '../../data/admin_dashboard_repository_impl.dart';
 import '../../data/admin_delivery_slot_repository_impl.dart';
 import '../../data/admin_driver_repository_impl.dart';
+import '../../data/admin_expense_repository_impl.dart';
 import '../../data/admin_order_repository_impl.dart';
 import '../../data/admin_picker_repository_impl.dart';
 import '../../data/admin_report_repository_impl.dart';
@@ -17,6 +18,7 @@ import '../../domain/admin_customer_repository.dart';
 import '../../domain/admin_dashboard_repository.dart';
 import '../../domain/admin_delivery_slot_repository.dart';
 import '../../domain/admin_driver_repository.dart';
+import '../../domain/admin_expense_repository.dart';
 import '../../domain/admin_order_repository.dart';
 import '../../domain/admin_picker_repository.dart';
 import '../../domain/admin_report_repository.dart';
@@ -70,3 +72,7 @@ AdminScheduleRepository adminScheduleRepository(Ref ref) =>
 @Riverpod(keepAlive: true)
 AdminReportRepository adminReportRepository(Ref ref) =>
     AdminReportRepositoryImpl(client: ref.watch(apiClientProvider));
+
+@Riverpod(keepAlive: true)
+AdminExpenseRepository adminExpenseRepository(Ref ref) =>
+    AdminExpenseRepositoryImpl(client: ref.watch(apiClientProvider));

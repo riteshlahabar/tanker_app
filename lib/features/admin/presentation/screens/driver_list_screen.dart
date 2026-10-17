@@ -117,6 +117,7 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
                             return EntityListTile(
                               title: driver.fullName,
                               subtitle: '${driver.mobile}'
+                                  ' · ₹ ${driver.monthlySalary.toStringAsFixed(0)}/mo'
                                   '${driver.tanker != null ? ' · ${driver.tanker!.label}' : ' · No tanker'}',
                               active: driver.status,
                               onTap: () => _openForm(existing: driver),

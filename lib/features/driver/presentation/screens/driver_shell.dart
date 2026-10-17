@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../shared/models/nav_tab.dart';
 import '../../../../shared/screens/account_profile_screen.dart';
 import '../../../../shared/widgets/role_shell.dart';
-import 'driver_delivery_summary_screen.dart';
+import 'driver_expenses_screen.dart';
 import 'driver_home_screen.dart';
 import 'driver_orders_screen.dart';
 import 'driver_spots_screen.dart';
 
 /// What a driver sees: today's run, their deliveries, the refill spots on the
-/// route, how much they have delivered, and their account. No drawer.
+/// route, what they have spent, and their account. No drawer.
 class DriverShell extends StatelessWidget {
   const DriverShell({super.key});
 
@@ -36,10 +36,10 @@ class DriverShell extends StatelessWidget {
           body: DriverSpotsScreen(),
         ),
         NavTab(
-          label: 'Summary',
-          icon: Icons.insights_outlined,
-          title: 'My Delivery Summary',
-          body: DriverDeliverySummaryScreen(),
+          label: 'Expenses',
+          icon: Icons.receipt_long_outlined,
+          title: 'My Expenses',
+          body: DriverExpensesScreen(),
         ),
         NavTab(
           label: 'Profile',

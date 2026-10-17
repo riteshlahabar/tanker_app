@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/colors.dart';
 import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/entity_list_tile.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_tanker.dart';
 import '../providers/admin_tankers_controller.dart';
+import '../widgets/tanker_filter_bar.dart';
+import '../widgets/tanker_list_tile.dart';
 import 'tanker_form_screen.dart';
 
 class TankerListScreen extends ConsumerStatefulWidget {
@@ -17,7 +19,6 @@ class TankerListScreen extends ConsumerStatefulWidget {
 
 class _TankerListScreenState extends ConsumerState<TankerListScreen> {
   final _scrollController = ScrollController();
-  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +34,6 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -48,47 +48,15 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(adminTankersControllerProvider);
+    final notifier = ref.read(adminTankersControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tankers')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: 'Search tankers',
-                      prefixIcon: Icon(Icons.search),
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (value) => ref
-                        .read(adminTankersControllerProvider.notifier)
-                        .setFilter(state.filter.copyWith(search: value)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<bool?>(
-                  value: state.filter.status,
-                  hint: const Text('Status'),
-                  onChanged: (value) => ref.read(adminTankersControllerProvider.notifier).setFilter(
-                        value == null
-                            ? state.filter.copyWith(clearStatus: true)
-                            : state.filter.copyWith(status: value),
-                      ),
-                  items: const [
-                    DropdownMenuItem(value: null, child: Text('All')),
-                    DropdownMenuItem(value: true, child: Text('Active')),
-                    DropdownMenuItem(value: false, child: Text('Inactive')),
-                  ],
-                ),
-              ],
-            ),
-          ),
+          TankerFilterBar(filter: state.filter, onChanged: notifier.setFilter),
+          if (!state.loading || !state.paginated.isEmpty)
+            _CountLine(total: state.paginated.total),
           Expanded(
             child: state.loading && state.paginated.isEmpty
                 ? const Center(child: CircularProgressIndicator())
@@ -99,10 +67,10 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
                         message: state.error?.message,
                       )
                     : RefreshIndicator(
-                        onRefresh: () => ref.read(adminTankersControllerProvider.notifier).refresh(),
+                        onRefresh: notifier.refresh,
                         child: ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.only(top: 4, bottom: 90),
                           itemCount: state.paginated.items.length + (state.loadingMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index >= state.paginated.items.length) {
@@ -114,12 +82,8 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
 
                             final tanker = state.paginated.items[index];
 
-                            return EntityListTile(
-                              title: tanker.label,
-                              subtitle: tanker.currentDriver == null
-                                  ? 'Unassigned'
-                                  : 'Driver: ${tanker.currentDriver}',
-                              active: tanker.status,
+                            return TankerListTile(
+                              tanker: tanker,
                               onTap: () => _openForm(existing: tanker),
                             );
                           },
@@ -128,11 +92,42 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+      // Labelled rather than a bare +: this screen also holds a search field
+      // and two filter chips, so what the button adds should be said.
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openForm,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Tanker'),
       ),
       bottomNavigationBar: const ShellTabBar(),
+    );
+  }
+}
+
+/// How many tankers the current filters match. Without it the list is just
+/// "some tankers" — the count is what tells the owner whether a filter did
+/// what they expected. Same line as the Orders screen's.
+class _CountLine extends StatelessWidget {
+  const _CountLine({required this.total});
+
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 6, 16, 2),
+        child: Text(
+          total == 1 ? '1 tanker' : '$total tankers',
+          style: const TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.4,
+            color: appTextColorSecondary,
+          ),
+        ),
+      ),
     );
   }
 }

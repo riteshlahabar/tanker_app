@@ -6,8 +6,9 @@ import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_settings_controller.dart';
 
-/// The six fields `UpdateSettingRequest` validates, mirroring the web
-/// panel's own Settings screen field-for-field.
+/// The six fields `UpdateSettingRequest` validates, mirroring the web panel's
+/// own Settings screen field-for-field — same keys, same labels, same help
+/// text, so the two cannot describe the same setting differently.
 class AdminSettingsScreen extends ConsumerStatefulWidget {
   const AdminSettingsScreen({super.key});
 
@@ -18,37 +19,61 @@ class AdminSettingsScreen extends ConsumerStatefulWidget {
 class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   final _companyName = TextEditingController();
   final _whatsappNumber = TextEditingController();
-  final _driverRate = TextEditingController();
+  final _monthlySalary = TextEditingController();
   final _orderAmount = TextEditingController();
   final _pricePerTanker = TextEditingController();
   final _reportTime = TextEditingController();
   bool _loaded = false;
 
+  /// What the panel's own form falls back to when a settings row is missing
+  /// (`setting::_partials.fields`). The app had shown blanks instead, and
+  /// since five of the six are `required`, a first save on a server with no
+  /// settings rows came straight back as a 422 — which is exactly the state
+  /// the live server is in.
+  static const _panelDefaults = <String, String>{
+    'company_name': 'Tanker',
+    'default_monthly_salary': '15000',
+    'default_order_amount': '0',
+    'price_per_tanker': '0',
+    'daily_report_time': '23:59',
+  };
+
   @override
   void dispose() {
     _companyName.dispose();
     _whatsappNumber.dispose();
-    _driverRate.dispose();
+    _monthlySalary.dispose();
     _orderAmount.dispose();
     _pricePerTanker.dispose();
     _reportTime.dispose();
     super.dispose();
   }
 
+  /// A key the server has no row for, or holds as an empty string, falls back
+  /// to the panel's default.
+  String _valueOf(Map<String, String?> values, String key) {
+    final stored = values[key];
+
+    if (stored != null && stored.isNotEmpty) return stored;
+
+    return _panelDefaults[key] ?? '';
+  }
+
   void _fillFrom(Map<String, String?> values) {
-    _companyName.text = values['company_name'] ?? '';
+    _companyName.text = _valueOf(values, 'company_name');
+    // The one genuinely optional field, so no default is invented for it.
     _whatsappNumber.text = values['admin_whatsapp_number'] ?? '';
-    _driverRate.text = values['default_driver_rate'] ?? '';
-    _orderAmount.text = values['default_order_amount'] ?? '';
-    _pricePerTanker.text = values['price_per_tanker'] ?? '';
-    _reportTime.text = values['daily_report_time'] ?? '';
+    _monthlySalary.text = _valueOf(values, 'default_monthly_salary');
+    _orderAmount.text = _valueOf(values, 'default_order_amount');
+    _pricePerTanker.text = _valueOf(values, 'price_per_tanker');
+    _reportTime.text = _valueOf(values, 'daily_report_time');
   }
 
   Future<void> _save() async {
     final message = await ref.read(adminSettingsControllerProvider.notifier).save({
       'company_name': _companyName.text.trim(),
       'admin_whatsapp_number': _whatsappNumber.text.trim(),
-      'default_driver_rate': _driverRate.text.trim(),
+      'default_monthly_salary': _monthlySalary.text.trim(),
       'default_order_amount': _orderAmount.text.trim(),
       'price_per_tanker': _pricePerTanker.text.trim(),
       'daily_report_time': _reportTime.text.trim(),
@@ -86,29 +111,32 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             const SizedBox(height: 12),
             AppTextField(
               controller: _whatsappNumber,
-              label: 'Admin WhatsApp number',
-              hint: 'With country code, e.g. 919812345678',
+              label: 'Owner WhatsApp number',
+              hint: 'With country code, digits only, e.g. 919812345678',
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
             AppTextField(
-              controller: _driverRate,
-              label: 'Default driver rate (per delivery)',
-              hint: '',
+              controller: _monthlySalary,
+              // Drivers are salaried monthly, not paid per delivery — this
+              // field used to say "rate (per delivery)" and, worse, still
+              // posted the dropped `default_driver_rate` key.
+              label: 'Default monthly salary (₹)',
+              hint: "Pre-filled on a new driver. Each driver's own salary is set on their form",
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
             AppTextField(
               controller: _orderAmount,
-              label: 'Default order amount',
-              hint: 'Used when price per litre is 0',
+              label: 'Default order amount (₹)',
+              hint: 'Flat price per delivery. Pre-filled on a new order',
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
             AppTextField(
               controller: _pricePerTanker,
               label: 'Price per tanker (₹)',
-              hint: 'Used when a tanker has no rate of its own; 0 = flat amount',
+              hint: 'One tanker-load, for vehicles with no rate of their own. 0 = the flat amount',
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),

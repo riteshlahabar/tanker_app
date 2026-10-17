@@ -34,6 +34,16 @@ class ShellTabs extends _$ShellTabs {
 
   void select(int index) => state = ShellTabsState(tabs: state.tabs, index: index);
 
+  /// Select a tab by the label its [NavTab] carries, ignoring the call when no
+  /// such tab is registered. Lets a screen send the owner to a sibling tab —
+  /// the dashboard's "All orders", say — without hard-coding an index that a
+  /// later tab reshuffle would silently break.
+  void selectLabel(String label) {
+    final index = state.tabs.indexWhere((tab) => tab.label == label);
+
+    if (index >= 0) select(index);
+  }
+
   /// Hardware back on a tab other than the home one returns to it.
   void goHome() => select(0);
 }

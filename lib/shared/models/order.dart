@@ -34,6 +34,7 @@ class Order {
     this.deliveryDate,
     this.deliveredAt,
     this.createdAt,
+    this.customerName,
     this.driverName,
     this.tankerNumber,
     this.spotName,
@@ -56,6 +57,9 @@ class Order {
   final DateTime? deliveryDate;
   final DateTime? deliveredAt;
   final DateTime? createdAt;
+  /// Only the admin list carries this — a customer reading their own orders
+  /// already knows whose they are, and a driver sees the address instead.
+  final String? customerName;
   final String? driverName;
   final String? tankerNumber;
   final String? spotName;
@@ -88,6 +92,7 @@ class Order {
         deliveryDate: JsonRead.asDate(json['delivery_date']),
         deliveredAt: JsonRead.asDate(json['delivered_at']),
         createdAt: JsonRead.asDate(json['created_at']),
+        customerName: JsonRead.asStringOrNull(json['customer_name']),
         driverName: JsonRead.asStringOrNull(json['driver_name']),
         tankerNumber: JsonRead.asStringOrNull(json['tanker_number']),
         spotName: JsonRead.asStringOrNull(json['spot_name']),

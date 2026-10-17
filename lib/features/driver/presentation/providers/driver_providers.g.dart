@@ -58,5 +58,22 @@ final spotRepositoryProvider = Provider<SpotRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SpotRepositoryRef = ProviderRef<SpotRepository>;
+String _$expenseRepositoryHash() => r'f6a3161624ff2f1394db911bc59afe9346d19983';
+
+/// See also [expenseRepository].
+@ProviderFor(expenseRepository)
+final expenseRepositoryProvider = Provider<ExpenseRepository>.internal(
+  expenseRepository,
+  name: r'expenseRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$expenseRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ExpenseRepositoryRef = ProviderRef<ExpenseRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

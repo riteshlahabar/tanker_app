@@ -210,5 +210,24 @@ final adminReportRepositoryProvider = Provider<AdminReportRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AdminReportRepositoryRef = ProviderRef<AdminReportRepository>;
+String _$adminExpenseRepositoryHash() =>
+    r'e8d9d638068418e8cb718dd5d94a944ecaf87cbc';
+
+/// See also [adminExpenseRepository].
+@ProviderFor(adminExpenseRepository)
+final adminExpenseRepositoryProvider =
+    Provider<AdminExpenseRepository>.internal(
+      adminExpenseRepository,
+      name: r'adminExpenseRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$adminExpenseRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AdminExpenseRepositoryRef = ProviderRef<AdminExpenseRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
