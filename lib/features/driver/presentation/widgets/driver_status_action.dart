@@ -5,6 +5,7 @@ import '../../../../shared/models/order.dart';
 import '../../../../shared/models/order_status.dart';
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/sheet_body.dart';
 import '../providers/driver_order_detail_controller.dart';
 import '../providers/driver_providers.dart';
 
@@ -36,13 +37,7 @@ class DriverStatusAction extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setSheetState) => Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: 16 + MediaQuery.of(sheetContext).viewInsets.bottom,
-          ),
+        builder: (sheetContext, setSheetState) => SheetBody(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,6 +45,9 @@ class DriverStatusAction extends ConsumerWidget {
               const Text('Start refill', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 12),
               DropdownButtonFormField<int?>(
+                // A spot name is as long as the admin typed it; without this the
+                // row overflows instead of ellipsizing on a narrow phone.
+                isExpanded: true,
                 initialValue: chosenSpotId,
                 decoration: const InputDecoration(labelText: 'Spot', border: OutlineInputBorder()),
                 items: [

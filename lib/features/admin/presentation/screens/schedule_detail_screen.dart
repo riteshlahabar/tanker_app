@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/sheet_body.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/upcoming_date_tile.dart';
 import '../providers/admin_schedule_detail_controller.dart';
@@ -26,13 +27,7 @@ class ScheduleDetailScreen extends ConsumerWidget {
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
-        ),
+      builder: (context) => SheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

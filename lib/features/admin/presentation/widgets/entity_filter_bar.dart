@@ -3,28 +3,38 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/colors.dart';
 import '../../domain/entity_list_filter.dart';
 
-/// Search and an active/inactive filter for the Tankers list.
+/// Search plus an active/inactive filter, for any of the five master-data
+/// lists — all of them read the same `search` and `status` query params.
 ///
 /// The idiom is [AdminOrderFilterBar]'s, deliberately: a filled cream 15px
-/// field over a row of chips. What was here before — a bare outlined field
-/// beside a loose `DropdownButton` — was the only filter bar in the admin app
-/// shaped that way, so it read as a different app from the Orders and Expenses
-/// screens.
-class TankerFilterBar extends StatefulWidget {
-  const TankerFilterBar({
+/// field over a row of chips. What the lists had before — a bare outlined field
+/// beside a loose `DropdownButton` — was the only filter shape in the admin app
+/// like that, so those screens read as a different app from Orders and
+/// Expenses.
+///
+/// Generalised from the Tanker screen's own bar rather than copied per list:
+/// only the search hint differs between them, and five near-identical files is
+/// how two of them end up disagreeing.
+class EntityFilterBar extends StatefulWidget {
+  const EntityFilterBar({
     super.key,
     required this.filter,
     required this.onChanged,
+    required this.searchHint,
   });
 
   final EntityListFilter filter;
   final ValueChanged<EntityListFilter> onChanged;
 
+  /// Names the fields the server actually searches, so the owner is not left
+  /// guessing what the box will match.
+  final String searchHint;
+
   @override
-  State<TankerFilterBar> createState() => _TankerFilterBarState();
+  State<EntityFilterBar> createState() => _EntityFilterBarState();
 }
 
-class _TankerFilterBarState extends State<TankerFilterBar> {
+class _EntityFilterBarState extends State<EntityFilterBar> {
   late final _searchController = TextEditingController(text: widget.filter.search);
 
   @override
@@ -53,7 +63,7 @@ class _TankerFilterBarState extends State<TankerFilterBar> {
             controller: _searchController,
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              hintText: 'Search by number, name or RC',
+              hintText: widget.searchHint,
               prefixIcon: const Icon(Icons.search, size: 20),
               isDense: true,
               filled: true,

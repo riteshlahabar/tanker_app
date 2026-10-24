@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/sheet_body.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/stat_tile.dart';
 import '../../domain/admin_report_definition.dart';
@@ -252,13 +253,7 @@ class _DriverSearchSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(driverPickerControllerProvider);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
-      ),
+    return SheetBody(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,13 +293,7 @@ class _CustomerSearchSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerPickerControllerProvider);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
-      ),
+    return SheetBody(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

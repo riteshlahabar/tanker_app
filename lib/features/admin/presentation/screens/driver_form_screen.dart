@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/widgets/active_switch_card.dart';
+import '../../../../shared/widgets/app_dropdown_field.dart';
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../../shared/widgets/form_error_note.dart';
+import '../../../../shared/widgets/form_note.dart';
+import '../../../../shared/widgets/form_section_heading.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_driver.dart';
@@ -26,8 +31,14 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
   late final _mobile = TextEditingController(text: widget.existing?.mobile);
   final _password = TextEditingController();
   final _passwordConfirmation = TextEditingController();
-  late final _salary =
-      TextEditingController(text: widget.existing?.monthlySalary.toStringAsFixed(0) ?? '');
+  // Blank for a zero salary, matching DriverListTile's "Salary not set": the
+  // figure every driver carries today is an omission, not a decision, so
+  // pre-filling 0 would invite saving it straight back unchanged.
+  late final _salary = TextEditingController(
+    text: (widget.existing?.monthlySalary ?? 0) == 0
+        ? ''
+        : widget.existing!.monthlySalary.toStringAsFixed(0),
+  );
   late final _address = TextEditingController(text: widget.existing?.address);
   late bool _status = widget.existing?.status ?? true;
   int? _tankerId;
@@ -124,55 +135,87 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Driver' : 'Add Driver'),
         actions: [
-          if (isEditing) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
+          if (isEditing)
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete driver',
+              onPressed: _delete,
+            ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppTextField(
-                controller: _firstName,
-                label: 'First name',
-                hint: '',
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              // Grouped rather than one undifferentiated stack of nine fields:
+              // who the person is, how they sign in, what they drive and what
+              // they are paid are four different questions, and the form reads
+              // as a wall of boxes without the split.
+              const FormSectionHeading('Who they are'),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _firstName,
+                      label: 'First name',
+                      hint: '',
+                      textInputAction: TextInputAction.next,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _lastName,
+                      label: 'Last name',
+                      hint: 'Optional',
+                      textInputAction: TextInputAction.next,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
-              AppTextField(controller: _lastName, label: 'Last name', hint: 'Optional'),
-              const SizedBox(height: 12),
+              AppTextField(controller: _address, label: 'Address', hint: 'Optional', maxLines: 2),
+              const FormSectionHeading('How they sign in'),
               AppTextField(
                 controller: _mobile,
                 label: 'Mobile',
-                hint: '',
+                hint: 'Ten digits',
                 keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.next,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
+              const SizedBox(height: 8),
+              // Ten digits, not 91-prefixed: this is what the driver types at
+              // login, and the panel qualifies it to 91 itself before sending
+              // any WhatsApp message.
+              const FormNote('The driver logs into the app with this number. Store ten digits.'),
               const SizedBox(height: 12),
               AppTextField(
                 controller: _password,
-                label: isEditing ? 'New password (optional)' : 'Password',
-                hint: '',
+                label: isEditing ? 'New password' : 'Password',
+                hint: isEditing ? 'Leave blank to keep the current one' : '',
                 obscureText: true,
-                validator: (v) =>
-                    (!isEditing && (v == null || v.isEmpty)) ? 'Required' : null,
+                validator: (v) => (!isEditing && (v == null || v.isEmpty)) ? 'Required' : null,
               ),
               const SizedBox(height: 12),
               AppTextField(
                 controller: _passwordConfirmation,
                 label: 'Confirm password',
-                hint: '',
+                hint: isEditing ? 'Only if changing it' : '',
                 obscureText: true,
                 validator: (v) => (_password.text.isNotEmpty && v != _password.text)
                     ? 'Passwords do not match'
                     : null,
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int?>(
-                initialValue: _tankerId,
-                decoration: const InputDecoration(labelText: 'Tanker', border: OutlineInputBorder()),
+              const FormSectionHeading('What they drive'),
+              AppDropdownField<int?>(
+                label: 'Tanker',
+                value: _tankerId,
+                icon: Icons.local_shipping_outlined,
                 items: [
                   const DropdownMenuItem(value: null, child: Text('No tanker')),
                   ..._tankerOptions.map(
@@ -181,26 +224,35 @@ class _DriverFormScreenState extends ConsumerState<DriverFormScreen> {
                 ],
                 onChanged: (value) => setState(() => _tankerId = value),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              const FormNote(
+                'Only unassigned tankers are listed, plus the one this driver '
+                'already holds. A driver with no tanker cannot be given an order.',
+              ),
+              const FormSectionHeading('What they are paid'),
               AppTextField(
                 controller: _salary,
                 label: 'Monthly salary (₹)',
-                hint: '',
+                hint: 'Required',
                 keyboardType: TextInputType.number,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
-              AppTextField(controller: _address, label: 'Address', hint: 'Optional', maxLines: 3),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Active'),
+              const SizedBox(height: 8),
+              const FormNote(
+                'A whole month, not a rate per delivery. It is never divided '
+                'across deliveries, never recorded on an order, and never '
+                'prorated in a report.',
+              ),
+              const SizedBox(height: 20),
+              ActiveSwitchCard(
                 value: _status,
                 onChanged: (value) => setState(() => _status = value),
+                activeNote: 'Can log in and be assigned orders',
+                inactiveNote: 'Cannot log in or be given new orders',
               ),
               if (formState.failure != null) ...[
-                const SizedBox(height: 8),
-                Text(formState.failure!.message, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                FormErrorNote(formState.failure!.message),
               ],
               const SizedBox(height: 24),
               PrimaryButton(

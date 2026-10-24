@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/colors.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/list_count_line.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_tanker.dart';
 import '../providers/admin_tankers_controller.dart';
-import '../widgets/tanker_filter_bar.dart';
+import '../widgets/entity_filter_bar.dart';
 import '../widgets/tanker_list_tile.dart';
 import 'tanker_form_screen.dart';
 
@@ -54,9 +54,13 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
       appBar: AppBar(title: const Text('Tankers')),
       body: Column(
         children: [
-          TankerFilterBar(filter: state.filter, onChanged: notifier.setFilter),
+          EntityFilterBar(
+            filter: state.filter,
+            onChanged: notifier.setFilter,
+            searchHint: 'Search by number, name or RC',
+          ),
           if (!state.loading || !state.paginated.isEmpty)
-            _CountLine(total: state.paginated.total),
+            ListCountLine(total: state.paginated.total, singular: 'tanker', plural: 'tankers'),
           Expanded(
             child: state.loading && state.paginated.isEmpty
                 ? const Center(child: CircularProgressIndicator())
@@ -100,34 +104,6 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
         label: const Text('Add Tanker'),
       ),
       bottomNavigationBar: const ShellTabBar(),
-    );
-  }
-}
-
-/// How many tankers the current filters match. Without it the list is just
-/// "some tankers" — the count is what tells the owner whether a filter did
-/// what they expected. Same line as the Orders screen's.
-class _CountLine extends StatelessWidget {
-  const _CountLine({required this.total});
-
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 6, 16, 2),
-        child: Text(
-          total == 1 ? '1 tanker' : '$total tankers',
-          style: const TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.4,
-            color: appTextColorSecondary,
-          ),
-        ),
-      ),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/sheet_body.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/tanker_count_field.dart';
 import '../../domain/admin_schedule.dart';
@@ -493,13 +494,7 @@ class _DriverPickerSheetState extends ConsumerState<_DriverPickerSheet> {
   Widget build(BuildContext context) {
     final state = ref.watch(driverPickerControllerProvider);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
-      ),
+    return SheetBody(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

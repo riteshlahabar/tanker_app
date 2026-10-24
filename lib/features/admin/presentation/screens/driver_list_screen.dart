@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/list_count_line.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_driver.dart';
 import '../providers/admin_drivers_controller.dart';
+import '../widgets/driver_list_tile.dart';
+import '../widgets/entity_filter_bar.dart';
 import 'driver_form_screen.dart';
 
 class DriverListScreen extends ConsumerStatefulWidget {
@@ -17,7 +19,6 @@ class DriverListScreen extends ConsumerStatefulWidget {
 
 class _DriverListScreenState extends ConsumerState<DriverListScreen> {
   final _scrollController = ScrollController();
-  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +34,6 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -48,47 +48,19 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(adminDriversControllerProvider);
+    final notifier = ref.read(adminDriversControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Drivers')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: 'Search drivers',
-                      prefixIcon: Icon(Icons.search),
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (value) => ref
-                        .read(adminDriversControllerProvider.notifier)
-                        .setFilter(state.filter.copyWith(search: value)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<bool?>(
-                  value: state.filter.status,
-                  hint: const Text('Status'),
-                  onChanged: (value) => ref.read(adminDriversControllerProvider.notifier).setFilter(
-                        value == null
-                            ? state.filter.copyWith(clearStatus: true)
-                            : state.filter.copyWith(status: value),
-                      ),
-                  items: const [
-                    DropdownMenuItem(value: null, child: Text('All')),
-                    DropdownMenuItem(value: true, child: Text('Active')),
-                    DropdownMenuItem(value: false, child: Text('Inactive')),
-                  ],
-                ),
-              ],
-            ),
+          EntityFilterBar(
+            filter: state.filter,
+            onChanged: notifier.setFilter,
+            searchHint: 'Search by name or mobile',
           ),
+          if (!state.loading || !state.paginated.isEmpty)
+            ListCountLine(total: state.paginated.total, singular: 'driver', plural: 'drivers'),
           Expanded(
             child: state.loading && state.paginated.isEmpty
                 ? const Center(child: CircularProgressIndicator())
@@ -99,10 +71,10 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
                         message: state.error?.message,
                       )
                     : RefreshIndicator(
-                        onRefresh: () => ref.read(adminDriversControllerProvider.notifier).refresh(),
+                        onRefresh: notifier.refresh,
                         child: ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.only(top: 4, bottom: 90),
                           itemCount: state.paginated.items.length + (state.loadingMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index >= state.paginated.items.length) {
@@ -114,12 +86,8 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
 
                             final driver = state.paginated.items[index];
 
-                            return EntityListTile(
-                              title: driver.fullName,
-                              subtitle: '${driver.mobile}'
-                                  ' · ₹ ${driver.monthlySalary.toStringAsFixed(0)}/mo'
-                                  '${driver.tanker != null ? ' · ${driver.tanker!.label}' : ' · No tanker'}',
-                              active: driver.status,
+                            return DriverListTile(
+                              driver: driver,
                               onTap: () => _openForm(existing: driver),
                             );
                           },
@@ -128,9 +96,12 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+      // Labelled rather than a bare +: this screen also holds a search field
+      // and two filter chips, so what the button adds should be said.
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openForm,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Driver'),
       ),
       bottomNavigationBar: const ShellTabBar(),
     );

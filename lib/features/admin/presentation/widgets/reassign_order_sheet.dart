@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_result.dart';
 import '../../../../shared/models/spot.dart';
+import '../../../../shared/widgets/sheet_body.dart';
 import '../../../driver/presentation/providers/driver_providers.dart' as driver;
 import '../../domain/driver_option.dart';
 import '../providers/admin_order_detail_controller.dart';
@@ -74,13 +75,7 @@ class _ReassignOrderSheetState extends ConsumerState<ReassignOrderSheet> {
         .where((option) => option.id != widget.currentDriverId)
         .toList(growable: false);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
-      ),
+    return SheetBody(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,6 +124,9 @@ class _ReassignOrderSheetState extends ConsumerState<ReassignOrderSheet> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<int?>(
+            // A spot name is as long as the admin typed it; without this the
+            // row overflows instead of ellipsizing on a narrow phone.
+            isExpanded: true,
             initialValue: _chosenSpotId,
             decoration: const InputDecoration(labelText: 'Refill spot'),
             items: [
