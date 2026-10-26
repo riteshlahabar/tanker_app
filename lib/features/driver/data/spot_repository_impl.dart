@@ -15,15 +15,4 @@ class SpotRepositoryImpl implements SpotRepository {
         parse: (data) => JsonRead.asMapList(data).map(Spot.fromJson).toList(),
       );
 
-  @override
-  Future<ApiResult<List<Spot>>> nearby({
-    required double latitude,
-    required double longitude,
-    int limit = 10,
-  }) =>
-      _client.get<List<Spot>>(
-        '/spots/nearby',
-        query: {'latitude': latitude, 'longitude': longitude, 'limit': limit},
-        parse: (data) => JsonRead.asMapList(data).map(Spot.fromJson).toList(),
-      );
 }

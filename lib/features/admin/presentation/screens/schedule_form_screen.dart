@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/providers/core_providers.dart';
+import '../../../../shared/widgets/app_picker_field.dart';
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../../shared/widgets/form_note.dart';
+import '../../../../shared/widgets/form_section_heading.dart';
 import '../../../../shared/widgets/primary_button.dart';
-import '../../../../shared/widgets/sheet_body.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/tanker_count_field.dart';
 import '../../domain/admin_schedule.dart';
@@ -15,6 +17,7 @@ import '../providers/admin_picker_controllers.dart';
 import '../providers/admin_providers.dart';
 import '../providers/admin_schedule_form_controller.dart';
 import '../providers/admin_schedules_controller.dart';
+import '../widgets/driver_picker_sheet.dart';
 
 /// Create (no [existing]) or edit a standing order. The customer is fixed
 /// once created — `UpdateDeliveryScheduleRequest` refuses changing it, since
@@ -50,13 +53,14 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
   TimeOfDay? _deliveryTime;
 
   late int _tankers = widget.existing?.tankerCount ?? 1;
-  late final _orderAmount =
-      TextEditingController(text: widget.existing?.orderAmount?.toString() ?? '');
+  late final _tankerRate =
+      TextEditingController(text: widget.existing?.tankerRate?.toString() ?? '');
   late final _address = TextEditingController(text: widget.existing?.deliveryAddress);
-  late final _latitude =
-      TextEditingController(text: widget.existing?.latitude?.toString() ?? '');
-  late final _longitude =
-      TextEditingController(text: widget.existing?.longitude?.toString() ?? '');
+
+  /// Empty is a meaning, not a gap: "price every delivery from whichever
+  /// tanker goes out". So the usual driver only fills the rate in while the
+  /// admin has not typed one of their own.
+  late bool _rateIsTheirs = widget.existing?.tankerRate != null;
   late final _notes = TextEditingController(text: widget.existing?.notes);
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
@@ -90,10 +94,8 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
   @override
   void dispose() {
     _intervalDays.dispose();
-    _orderAmount.dispose();
+    _tankerRate.dispose();
     _address.dispose();
-    _latitude.dispose();
-    _longitude.dispose();
     _notes.dispose();
     super.dispose();
   }
@@ -102,11 +104,21 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
     final chosen = await showModalBottomSheet<DriverOption>(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _DriverPickerSheet(),
+      builder: (_) => const DriverPickerSheet(title: 'Usual driver'),
     );
 
-    if (chosen != null) setState(() => _preferredDriver = chosen);
+    if (chosen == null) return;
+
+    setState(() {
+      _preferredDriver = chosen;
+
+      final rate = chosen.tankerRate ?? 0;
+
+      if (!_rateIsTheirs && rate > 0) _tankerRate.text = rate.toStringAsFixed(2);
+    });
   }
+
+  double get _rateValue => double.tryParse(_tankerRate.text.trim()) ?? 0;
 
   Future<void> _pickStartDate() async {
     final picked = await showDatePicker(
@@ -177,13 +189,11 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
             'interval_days': int.tryParse(_intervalDays.text.trim()) ?? 1,
             'weekdays': _patternMode == _Pattern.weekdays ? _weekdays.toList() : null,
             'tanker_count': _tankers,
-            'order_amount': ?double.tryParse(_orderAmount.text.trim()),
+            'tanker_rate': ?double.tryParse(_tankerRate.text.trim()),
             'delivery_slot_id': _timingMode == _DeliveryTiming.slot ? _slotId : null,
             'delivery_time':
                 _timingMode == _DeliveryTiming.time ? _formatTime(_deliveryTime!) : null,
             'delivery_address': _address.text.trim().isEmpty ? null : _address.text.trim(),
-            'latitude': ?double.tryParse(_latitude.text.trim()),
-            'longitude': ?double.tryParse(_longitude.text.trim()),
             'preferred_driver_id': ?(_preferredDriver?.id ?? widget.existing?.preferredDriverId),
             'start_date': DateFormat('yyyy-MM-dd').format(_startDate),
             'end_date': endDate,
@@ -336,51 +346,48 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
                     child: Text(_deliveryTime == null ? 'Choose' : _deliveryTime!.format(context)),
                   ),
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              AppTextField(controller: _address, label: 'Delivery address', hint: 'Optional', maxLines: 3),
+              const SizedBox(height: 6),
+              const FormNote('Leave empty to deliver to the customer\'s registered address.'),
+
+              // Driver, then rate, then count, then what a visit comes to —
+              // the same order as the New Order form, because it is the same
+              // question: the price of a delivery is the rate of the tanker
+              // that turns up.
+              const FormSectionHeading('Driver and price'),
+              AppPickerField(
+                label: 'Usual driver',
+                hint: 'Leave for the admin to assign',
+                value: _preferredDriver?.fullName ?? widget.existing?.preferredDriver,
+                icon: Icons.local_shipping_outlined,
+                onTap: _pickDriver,
+              ),
+              const SizedBox(height: 12),
+              AppTextField(
+                controller: _tankerRate,
+                label: 'Rate per tanker (₹)',
+                hint: 'Optional',
+                keyboardType: TextInputType.number,
+                onChanged: (_) => setState(() => _rateIsTheirs = true),
+              ),
+              const SizedBox(height: 6),
+              const FormNote(
+                'Leave empty to price every delivery from whichever tanker goes out. '
+                'A rate entered here is the routine\'s own and is never re-priced.',
+              ),
+              const SizedBox(height: 12),
               TankerCountField(
                 value: _tankers,
                 label: 'Tankers per delivery',
                 onChanged: (count) => setState(() => _tankers = count),
               ),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: _orderAmount,
-                label: 'Amount per delivery',
-                hint: 'Optional — leave blank to price automatically',
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              AppTextField(controller: _address, label: 'Delivery address', hint: 'Optional', maxLines: 3),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      controller: _latitude,
-                      label: 'Latitude',
-                      hint: 'Optional',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppTextField(
-                      controller: _longitude,
-                      label: 'Longitude',
-                      hint: 'Optional',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.local_shipping_outlined),
-                title: Text(_preferredDriver?.fullName ??
-                    widget.existing?.preferredDriver ??
-                    'No preferred driver'),
-                trailing: TextButton(onPressed: _pickDriver, child: const Text('Choose')),
+              const SizedBox(height: 10),
+              FormNote(
+                _tankerRate.text.trim().isEmpty
+                    ? 'Amount per delivery: priced from the tanker that goes out.'
+                    : 'Amount per delivery: ₹ ${(_rateValue * _tankers).toStringAsFixed(2)} '
+                        '($_tankers × ₹ ${_rateValue.toStringAsFixed(2)}).',
               ),
               const SizedBox(height: 12),
               Row(
@@ -484,45 +491,3 @@ class _CustomerPickerField extends ConsumerWidget {
   }
 }
 
-class _DriverPickerSheet extends ConsumerStatefulWidget {
-  @override
-  ConsumerState<_DriverPickerSheet> createState() => _DriverPickerSheetState();
-}
-
-class _DriverPickerSheetState extends ConsumerState<_DriverPickerSheet> {
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(driverPickerControllerProvider);
-
-    return SheetBody(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Preferred driver', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-          const SizedBox(height: 12),
-          TextField(
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'Search drivers'),
-            onChanged: (value) => ref.read(driverPickerControllerProvider.notifier).search(value),
-          ),
-          const SizedBox(height: 12),
-          if (state.loading) const LinearProgressIndicator(),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 300),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                for (final driver in state.options)
-                  ListTile(
-                    title: Text(driver.fullName),
-                    onTap: () => Navigator.pop(context, driver),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

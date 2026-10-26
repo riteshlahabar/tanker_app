@@ -203,7 +203,7 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
               AppTextField(
                 controller: _rate,
                 label: 'Rate per tanker (₹)',
-                hint: 'Blank uses the Price per Tanker setting',
+                hint: 'What one load from this vehicle costs',
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 8),
@@ -211,8 +211,9 @@ class _TankerFormScreenState extends ConsumerState<TankerFormScreen> {
                 // Capacity sits in the section above on purpose: water is sold
                 // by the load, so litres are vehicle information and have no
                 // bearing on the price.
-                'One load from this vehicle. Leave it blank and the order falls '
-                'back to the Price per Tanker setting, then to the flat default.',
+                'One load from this vehicle, and the only place the price comes '
+                'from — there is no global default behind it. Left blank, every '
+                'order this tanker delivers prices at ₹ 0.',
               ),
               const FormSectionHeading('Paperwork'),
               AppTextField(

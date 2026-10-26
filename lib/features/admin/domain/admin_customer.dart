@@ -11,8 +11,6 @@ class AdminCustomer {
     required this.canSelfOrder,
     required this.status,
     this.address,
-    this.latitude,
-    this.longitude,
   });
 
   final int id;
@@ -21,8 +19,6 @@ class AdminCustomer {
   final String fullName;
   final String mobile;
   final String? address;
-  final double? latitude;
-  final double? longitude;
   final bool canSelfOrder;
   final bool status;
 
@@ -33,8 +29,6 @@ class AdminCustomer {
         fullName: JsonRead.asString(json['full_name']),
         mobile: JsonRead.asString(json['mobile']),
         address: JsonRead.asStringOrNull(json['address']),
-        latitude: JsonRead.asDoubleOrNull(json['latitude']),
-        longitude: JsonRead.asDoubleOrNull(json['longitude']),
         canSelfOrder: JsonRead.asBool(json['can_self_order'], fallback: true),
         status: JsonRead.asBool(json['status'], fallback: true),
       );

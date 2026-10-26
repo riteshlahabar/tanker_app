@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/list_count_line.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_customer.dart';
 import '../providers/admin_customers_controller.dart';
+import '../widgets/customer_list_tile.dart';
+import '../widgets/entity_filter_bar.dart';
 import 'customer_form_screen.dart';
 
 class CustomerListScreen extends ConsumerStatefulWidget {
@@ -17,7 +19,6 @@ class CustomerListScreen extends ConsumerStatefulWidget {
 
 class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   final _scrollController = ScrollController();
-  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +34,6 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -53,43 +53,17 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       appBar: AppBar(title: const Text('Customers')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: 'Search customers',
-                      prefixIcon: Icon(Icons.search),
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (value) => ref
-                        .read(adminCustomersControllerProvider.notifier)
-                        .setFilter(state.filter.copyWith(search: value)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<bool?>(
-                  value: state.filter.status,
-                  hint: const Text('Status'),
-                  onChanged: (value) =>
-                      ref.read(adminCustomersControllerProvider.notifier).setFilter(
-                            value == null
-                                ? state.filter.copyWith(clearStatus: true)
-                                : state.filter.copyWith(status: value),
-                          ),
-                  items: const [
-                    DropdownMenuItem(value: null, child: Text('All')),
-                    DropdownMenuItem(value: true, child: Text('Active')),
-                    DropdownMenuItem(value: false, child: Text('Inactive')),
-                  ],
-                ),
-              ],
-            ),
+          EntityFilterBar(
+            filter: state.filter,
+            onChanged: ref.read(adminCustomersControllerProvider.notifier).setFilter,
+            searchHint: 'Search by name or mobile',
           ),
+          if (!state.loading || !state.paginated.isEmpty)
+            ListCountLine(
+              total: state.paginated.total,
+              singular: 'customer',
+              plural: 'customers',
+            ),
           Expanded(
             child: state.loading && state.paginated.isEmpty
                 ? const Center(child: CircularProgressIndicator())
@@ -104,7 +78,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                             ref.read(adminCustomersControllerProvider.notifier).refresh(),
                         child: ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.only(top: 4, bottom: 90),
                           itemCount: state.paginated.items.length + (state.loadingMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index >= state.paginated.items.length) {
@@ -116,11 +90,8 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
 
                             final customer = state.paginated.items[index];
 
-                            return EntityListTile(
-                              title: customer.fullName,
-                              subtitle: '${customer.mobile}'
-                                  '${customer.canSelfOrder ? '' : ' · Standing order'}',
-                              active: customer.status,
+                            return CustomerListTile(
+                              customer: customer,
                               onTap: () => _openForm(existing: customer),
                             );
                           },
@@ -129,9 +100,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Customer'),
       ),
       bottomNavigationBar: const ShellTabBar(),
     );

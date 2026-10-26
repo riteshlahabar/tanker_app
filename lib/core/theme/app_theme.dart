@@ -17,6 +17,35 @@ import 'colors.dart';
 class AppThemeData {
   AppThemeData._();
 
+  /// A filled button is a block of colour, so the design's own blue is used in
+  /// both themes — it reads against white and against #262626 alike.
+  static FilledButtonThemeData _filledButtons(Color background, Color label) {
+    return FilledButtonThemeData(
+      style: FilledButton.styleFrom(backgroundColor: background, foregroundColor: label),
+    );
+  }
+
+  static ElevatedButtonThemeData _elevatedButtons(Color background, Color label) {
+    return ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(backgroundColor: background, foregroundColor: label),
+    );
+  }
+
+  /// A label on the surface itself, so this one takes the lighter tint in dark
+  /// mode — see `appColorPrimaryOnDark`.
+  static TextButtonThemeData _textButtons(Color label) {
+    return TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: label));
+  }
+
+  static OutlinedButtonThemeData _outlinedButtons(Color label) {
+    return OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: label,
+        side: BorderSide(color: label.withValues(alpha: 0.6)),
+      ),
+    );
+  }
+
   static final ThemeData lightTheme = ThemeData(
     scaffoldBackgroundColor: Colors.white,
     primaryColor: appColorPrimary,
@@ -45,6 +74,12 @@ class AppThemeData {
     ),
     visualDensity: VisualDensity.adaptivePlatformDensity,
     colorScheme: const ColorScheme.light(primary: appColorPrimary).copyWith(error: Colors.red),
+    // Stated rather than inherited, so no button depends on what the ambient
+    // scheme happens to call "primary". See the dark theme for why.
+    filledButtonTheme: _filledButtons(appColorPrimary, Colors.white),
+    elevatedButtonTheme: _elevatedButtons(appColorPrimary, Colors.white),
+    textButtonTheme: _textButtons(appColorPrimary),
+    outlinedButtonTheme: _outlinedButtons(appColorPrimary),
   ).copyWith(
     pageTransitionsTheme: const PageTransitionsTheme(builders: <TargetPlatform, PageTransitionsBuilder>{
       TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
@@ -86,10 +121,28 @@ class AppThemeData {
       titleSmall: TextStyle(color: Colors.white54),
     ),
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    // `primary` was `appBackgroundColorDark` and `onPrimary` was
+    // `cardBackgroundBlackDark` — the page colour and the card colour, handed
+    // to the scheme as its accent pair. Every button that did not style itself
+    // then drew in the colour of the surface behind it: a FilledButton was a
+    // #262626 block with #1F1F1F text on a #262626 page, and a TextButton's
+    // label was #262626 on #1F1F1F. Present but invisible, which is exactly
+    // what the owner reported.
+    //
+    // The two surface colours stay where they belong — `surface` — and the
+    // accent is the design's own blue, lightened only where it has to carry a
+    // label. appetit never hit this because every button in it was styled by
+    // hand.
     colorScheme: const ColorScheme.dark(
-      primary: appBackgroundColorDark,
-      onPrimary: cardBackgroundBlackDark,
+      primary: appColorPrimaryOnDark,
+      onPrimary: Colors.black,
+      surface: appBackgroundColorDark,
+      onSurface: Colors.white,
     ).copyWith(secondary: whiteColor).copyWith(error: const Color(0xFFCF6676)),
+    filledButtonTheme: _filledButtons(appColorPrimary, Colors.white),
+    elevatedButtonTheme: _elevatedButtons(appColorPrimary, Colors.white),
+    textButtonTheme: _textButtons(appColorPrimaryOnDark),
+    outlinedButtonTheme: _outlinedButtons(appColorPrimaryOnDark),
   ).copyWith(
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: <TargetPlatform, PageTransitionsBuilder>{

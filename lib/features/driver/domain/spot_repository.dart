@@ -1,13 +1,10 @@
 import '../../../core/network/api_result.dart';
 import '../../../shared/models/spot.dart';
 
-/// Talks to `/api/spots` and `/api/spots/nearby`.
+/// Talks to `/api/spots`.
+///
+/// `/api/spots/nearby` went with the coordinates it sorted by — see
+/// [NearbySpotsController].
 abstract interface class SpotRepository {
   Future<ApiResult<List<Spot>>> usable();
-
-  Future<ApiResult<List<Spot>>> nearby({
-    required double latitude,
-    required double longitude,
-    int limit = 10,
-  });
 }

@@ -31,6 +31,7 @@ class Order {
     required this.isOpen,
     required this.deliveryAddress,
     required this.orderAmount,
+    this.tankerRate = 0,
     this.deliveryDate,
     this.deliveredAt,
     this.createdAt,
@@ -53,6 +54,11 @@ class Order {
   final String statusLabel;
   final bool isOpen;
   final String deliveryAddress;
+
+  /// The whole price rule travels with every order, list rows included:
+  /// `tankerRate × tankerCount = orderAmount`. 0 means no tanker has been
+  /// chosen yet, so the price is not known — not that the water is free.
+  final double tankerRate;
   final double orderAmount;
   final DateTime? deliveryDate;
   final DateTime? deliveredAt;
@@ -78,6 +84,41 @@ class Order {
   /// how every screen names the quantity. Here rather than in each screen
   /// because all three roles show the same line.
   String get tankerLabel => '$tankerCount tanker${tankerCount == 1 ? '' : 's'}';
+
+  /// The amount, or what 0 actually means.
+  ///
+  /// An order has no price until a tanker is chosen, so "₹ 0" on a pending
+  /// booking reads as "free" when it means "not worked out yet". The same rule
+  /// the driver and tanker lists already follow for an unset salary or rate.
+  String get amountLabel =>
+      orderAmount > 0 ? '₹ ${orderAmount.toStringAsFixed(0)}' : 'Not priced yet';
+
+  /// "2 × ₹ 1,500" — how the total was reached, for a detail screen.
+  String? get priceBreakdown => tankerRate > 0 && tankerCount != null
+      ? '$tankerCount × ₹ ${tankerRate.toStringAsFixed(0)}'
+      : null;
+
+  /// The day this order belongs to on a bill: the day it was **delivered**,
+  /// falling back to the day it was due.
+  ///
+  /// Delivery is what is charged for, so a delivery that slipped past
+  /// midnight is billed on the night it actually happened — which is also the
+  /// date the customer remembers. Date only, so two deliveries on one day
+  /// group together whatever the clock said.
+  DateTime? get billingDate {
+    final day = deliveredAt ?? deliveryDate;
+
+    return day == null ? null : DateTime(day.year, day.month, day.day);
+  }
+
+  /// `2026-10`, and `2026-10-26` — keys that group and sort as plain strings.
+  String? get monthKey => billingDate == null
+      ? null
+      : '${billingDate!.year}-${billingDate!.month.toString().padLeft(2, '0')}';
+
+  String? get dayKey =>
+      billingDate == null ? null : '$monthKey-${billingDate!.day.toString().padLeft(2, '0')}';
+
   final OrderDriver? driver;
   final List<OrderStatusLogEntry> timeline;
 
@@ -88,6 +129,7 @@ class Order {
         statusLabel: JsonRead.asString(json['status_label']),
         isOpen: JsonRead.asBool(json['is_open'], fallback: true),
         deliveryAddress: JsonRead.asString(json['delivery_address']),
+        tankerRate: JsonRead.asDouble(json['tanker_rate']),
         orderAmount: JsonRead.asDouble(json['order_amount']),
         deliveryDate: JsonRead.asDate(json['delivery_date']),
         deliveredAt: JsonRead.asDate(json['delivered_at']),

@@ -43,7 +43,7 @@ class DriverOrderDetailScreen extends ConsumerWidget {
                   children: [
                     StatusChip(status: order.status, label: order.statusLabel),
                     Text(
-                      '₹ ${order.orderAmount.toStringAsFixed(0)}',
+                      order.amountLabel,
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                     ),
                   ],

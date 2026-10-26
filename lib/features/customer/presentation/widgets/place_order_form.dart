@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/theme/colors.dart';
+import '../../../../shared/widgets/app_dropdown_field.dart';
+import '../../../../shared/widgets/app_picker_field.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/form_note.dart';
+import '../../../../shared/widgets/form_section_heading.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/tanker_count_field.dart';
 import '../../../auth/presentation/providers/session_controller.dart';
@@ -42,6 +48,8 @@ class _PlaceOrderFormState extends ConsumerState<PlaceOrderForm> {
   DateTime _date = DateTime.now();
   int? _slotId;
   bool _addressPrefilled = false;
+
+  static final _dateFormat = DateFormat('EEE, d MMM yyyy');
 
   @override
   void initState() {
@@ -94,8 +102,12 @@ class _PlaceOrderFormState extends ConsumerState<PlaceOrderForm> {
     ref.invalidate(myOrdersControllerProvider(true));
     ref.read(placeOrderControllerProvider.notifier).reset();
 
+    // No amount in the message: a booking has no price until an admin picks
+    // the tanker that will deliver it, and "₹ 0" read as "free".
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Order ${order.orderNo} placed — ₹ ${order.orderAmount.toStringAsFixed(0)}')),
+      SnackBar(
+        content: Text('Order ${order.orderNo} placed. We will assign a tanker shortly.'),
+      ),
     );
 
     final detail = MaterialPageRoute<void>(builder: (_) => OrderDetailScreen(orderId: order.id));
@@ -132,12 +144,26 @@ class _PlaceOrderFormState extends ConsumerState<PlaceOrderForm> {
     final slots = ref.watch(deliverySlotOptionsProvider);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const _BookingHeader(),
+
+            const FormSectionHeading('How much water'),
+            TankerCountField(
+              value: _tankers,
+              onChanged: (count) => setState(() => _tankers = count),
+            ),
+            const SizedBox(height: 6),
+            const FormNote(
+              'Water is sold by the tanker-load. What it comes to is confirmed once '
+              'the office assigns a tanker — you will see it on the order.',
+            ),
+
+            const FormSectionHeading('Where and when'),
             AppTextField(
               controller: _address,
               label: 'Delivery address',
@@ -148,48 +174,106 @@ class _PlaceOrderFormState extends ConsumerState<PlaceOrderForm> {
               validator: (value) =>
                   (value == null || value.trim().isEmpty) ? 'Enter a delivery address' : null,
             ),
-            const SizedBox(height: 16),
-            InkWell(
+            const SizedBox(height: 12),
+            AppPickerField(
+              label: 'Delivery date',
+              hint: 'Choose a date',
+              value: _dateFormat.format(_date),
+              icon: Icons.event_outlined,
               onTap: _pickDate,
-              child: InputDecorator(
-                decoration: const InputDecoration(labelText: 'Delivery date', border: OutlineInputBorder()),
-                child: Text('${_date.day}/${_date.month}/${_date.year}'),
-              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             slots.when(
-              data: (options) => DropdownButtonFormField<int>(
-                initialValue: _slotId,
-                decoration: const InputDecoration(labelText: 'Delivery slot', border: OutlineInputBorder()),
-                items: options
-                    .map((slot) => DropdownMenuItem(value: slot.id, child: Text(slot.label)))
-                    .toList(),
+              data: (options) => AppDropdownField<int>(
+                label: 'Delivery slot',
+                value: _slotId,
+                icon: Icons.schedule_outlined,
+                items: [
+                  const DropdownMenuItem(value: null, child: Text('Any time that day')),
+                  ...options.map(
+                    (slot) => DropdownMenuItem(value: slot.id, child: Text(slot.label)),
+                  ),
+                ],
                 onChanged: (value) => setState(() => _slotId = value),
               ),
               loading: () => const LinearProgressIndicator(),
-              error: (_, _) => const Text('Could not load delivery slots.'),
+              error: (_, _) => const FormNote('Could not load delivery slots.'),
             ),
-            const SizedBox(height: 16),
-            TankerCountField(
-              value: _tankers,
-              onChanged: (count) => setState(() => _tankers = count),
-            ),
-            const SizedBox(height: 16),
+
+            const FormSectionHeading('Anything else'),
             AppTextField(
               controller: _notes,
               label: 'Notes',
-              hint: 'Optional',
+              hint: 'Gate code, landmark, who to ring',
               maxLines: 2,
             ),
             if (formState.failure != null) ...[
               const SizedBox(height: 16),
-              Text(formState.failure!.message, style: const TextStyle(color: Colors.red)),
+              Text(
+                formState.failure!.message,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: 24),
-            PrimaryButton(label: 'Place Order', busy: formState.submitting, onPressed: _submit),
-            const SizedBox(height: 16),
+            PrimaryButton(
+              label: 'Place Order',
+              busy: formState.submitting,
+              icon: Icons.local_shipping_outlined,
+              onPressed: _submit,
+            ),
+            const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+}
+
+
+/// A line at the top of the booking form saying what will happen, because the
+/// first question a customer has is "and then what?" — the order does not go
+/// straight to a driver, the office assigns one, and the price follows that
+/// tanker.
+class _BookingHeader extends StatelessWidget {
+  const _BookingHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Theme.of(context).cardColor : appetitAppContainerColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(color: appColorPrimary, shape: BoxShape.circle),
+            child: const Icon(Icons.water_drop, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Book a tanker',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'Tell us how many loads and when. The office assigns a tanker and '
+                  'you can follow it from My Orders.',
+                  style: TextStyle(fontSize: 12, height: 1.35, color: appTextColorSecondary),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

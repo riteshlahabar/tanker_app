@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/list_count_line.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_spots_controller.dart';
+import '../widgets/entity_filter_bar.dart';
+import '../widgets/spot_admin_list_tile.dart';
 import 'spot_form_screen.dart';
 
 class SpotListScreen extends ConsumerStatefulWidget {
@@ -17,7 +19,6 @@ class SpotListScreen extends ConsumerStatefulWidget {
 
 class _SpotListScreenState extends ConsumerState<SpotListScreen> {
   final _scrollController = ScrollController();
-  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +34,6 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -53,42 +53,17 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
       appBar: AppBar(title: const Text('Filling Points')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: 'Search filling points',
-                      prefixIcon: Icon(Icons.search),
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (value) => ref
-                        .read(adminSpotsControllerProvider.notifier)
-                        .setFilter(state.filter.copyWith(search: value)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<bool?>(
-                  value: state.filter.status,
-                  hint: const Text('Status'),
-                  onChanged: (value) => ref.read(adminSpotsControllerProvider.notifier).setFilter(
-                        value == null
-                            ? state.filter.copyWith(clearStatus: true)
-                            : state.filter.copyWith(status: value),
-                      ),
-                  items: const [
-                    DropdownMenuItem(value: null, child: Text('All')),
-                    DropdownMenuItem(value: true, child: Text('Active')),
-                    DropdownMenuItem(value: false, child: Text('Inactive')),
-                  ],
-                ),
-              ],
-            ),
+          EntityFilterBar(
+            filter: state.filter,
+            onChanged: ref.read(adminSpotsControllerProvider.notifier).setFilter,
+            searchHint: 'Search by name, address or contact',
           ),
+          if (!state.loading || !state.paginated.isEmpty)
+            ListCountLine(
+              total: state.paginated.total,
+              singular: 'filling point',
+              plural: 'filling points',
+            ),
           Expanded(
             child: state.loading && state.paginated.isEmpty
                 ? const Center(child: CircularProgressIndicator())
@@ -102,7 +77,7 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
                         onRefresh: () => ref.read(adminSpotsControllerProvider.notifier).refresh(),
                         child: ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.only(top: 4, bottom: 90),
                           itemCount: state.paginated.items.length + (state.loadingMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index >= state.paginated.items.length) {
@@ -114,11 +89,8 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
 
                             final spot = state.paginated.items[index];
 
-                            return EntityListTile(
-                              title: spot.name,
-                              subtitle: '₹ ${spot.refillCharge.toStringAsFixed(0)} refill'
-                                  '${spot.isAvailable ? '' : ' · Unavailable'}',
-                              active: spot.status,
+                            return SpotAdminListTile(
+                              spot: spot,
                               onTap: () => _openForm(existing: spot),
                             );
                           },
@@ -127,9 +99,10 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Filling Point'),
       ),
       bottomNavigationBar: const ShellTabBar(),
     );

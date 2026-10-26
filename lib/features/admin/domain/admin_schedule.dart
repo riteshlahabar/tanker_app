@@ -13,13 +13,11 @@ class AdminSchedule {
     this.customerMobile,
     this.weekdays,
     this.tankerCount,
-    this.orderAmount,
+    this.tankerRate,
     this.deliverySlotId,
     this.deliverySlot,
     this.deliveryTime,
     this.deliveryAddress,
-    this.latitude,
-    this.longitude,
     this.preferredDriverId,
     this.preferredDriver,
     this.startDate,
@@ -39,7 +37,14 @@ class AdminSchedule {
   final String pattern;
 
   final int? tankerCount;
-  final double? orderAmount;
+
+  /// The routine's own rate per tanker. Null means "price each delivery from
+  /// whichever tanker goes out", which is the usual case.
+  final double? tankerRate;
+
+  /// What one visit comes to, when the routine carries a rate of its own.
+  double? get amountPerDelivery =>
+      tankerRate == null ? null : tankerRate! * (tankerCount ?? 1);
 
   /// "1 tanker per delivery" / "3 tankers per delivery".
   String get tankerLabel =>
@@ -50,8 +55,6 @@ class AdminSchedule {
   final String? deliveryTime;
 
   final String? deliveryAddress;
-  final double? latitude;
-  final double? longitude;
 
   final int? preferredDriverId;
   final String? preferredDriver;
@@ -76,13 +79,11 @@ class AdminSchedule {
             : null,
         pattern: JsonRead.asString(json['pattern']),
         tankerCount: JsonRead.asIntOrNull(json['tanker_count']),
-        orderAmount: JsonRead.asDoubleOrNull(json['order_amount']),
+        tankerRate: JsonRead.asDoubleOrNull(json['tanker_rate']),
         deliverySlotId: JsonRead.asIntOrNull(json['delivery_slot_id']),
         deliverySlot: JsonRead.asStringOrNull(json['delivery_slot']),
         deliveryTime: JsonRead.asStringOrNull(json['delivery_time']),
         deliveryAddress: JsonRead.asStringOrNull(json['delivery_address']),
-        latitude: JsonRead.asDoubleOrNull(json['latitude']),
-        longitude: JsonRead.asDoubleOrNull(json['longitude']),
         preferredDriverId: JsonRead.asIntOrNull(json['preferred_driver_id']),
         preferredDriver: JsonRead.asStringOrNull(json['preferred_driver']),
         startDate: JsonRead.asDate(json['start_date']),

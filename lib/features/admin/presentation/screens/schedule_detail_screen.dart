@@ -115,9 +115,13 @@ class ScheduleDetailScreen extends ConsumerWidget {
                         _detailRow(Icons.location_on_outlined, detail.schedule.deliveryAddress!),
                       if (detail.schedule.tankerCount != null)
                         _detailRow(Icons.water_drop_outlined, detail.schedule.tankerLabel),
-                      if (detail.schedule.orderAmount != null)
-                        _detailRow(Icons.currency_rupee,
-                            '₹ ${detail.schedule.orderAmount!.toStringAsFixed(0)} per delivery'),
+                      _detailRow(
+                        Icons.currency_rupee,
+                        detail.schedule.tankerRate == null
+                            ? 'Priced from the tanker that delivers'
+                            : '₹ ${detail.schedule.tankerRate!.toStringAsFixed(0)} per tanker · '
+                                '₹ ${detail.schedule.amountPerDelivery!.toStringAsFixed(0)} per delivery',
+                      ),
                       if (detail.schedule.preferredDriver != null)
                         _detailRow(Icons.local_shipping_outlined,
                             'Preferred driver: ${detail.schedule.preferredDriver}'),

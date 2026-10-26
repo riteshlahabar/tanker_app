@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/driver_expense.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/expense_list_tile.dart';
+import '../../../../shared/widgets/list_count_line.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_expenses_controller.dart';
 import '../widgets/admin_expense_filter_bar.dart';
@@ -69,6 +70,12 @@ class _AdminExpenseListScreenState extends ConsumerState<AdminExpenseListScreen>
       body: Column(
         children: [
           AdminExpenseFilterBar(filter: state.filter),
+          if (!state.loading || !state.paginated.isEmpty)
+            ListCountLine(
+              total: state.paginated.total,
+              singular: 'expense',
+              plural: 'expenses',
+            ),
           Expanded(child: _list(state)),
         ],
       ),
@@ -94,7 +101,7 @@ class _AdminExpenseListScreenState extends ConsumerState<AdminExpenseListScreen>
       onRefresh: () => ref.read(adminExpensesControllerProvider.notifier).refresh(),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.only(top: 4, bottom: 90),
         itemCount: state.paginated.items.length + (state.loadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= state.paginated.items.length) {

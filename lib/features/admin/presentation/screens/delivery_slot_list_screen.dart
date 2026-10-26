@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/entity_list_tile.dart';
+import '../../../../shared/widgets/list_count_line.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_delivery_slot.dart';
 import '../providers/admin_delivery_slots_controller.dart';
+import '../widgets/delivery_slot_list_tile.dart';
+import '../widgets/entity_filter_bar.dart';
 import 'delivery_slot_form_screen.dart';
 
 class DeliverySlotListScreen extends ConsumerStatefulWidget {
@@ -17,7 +19,6 @@ class DeliverySlotListScreen extends ConsumerStatefulWidget {
 
 class _DeliverySlotListScreenState extends ConsumerState<DeliverySlotListScreen> {
   final _scrollController = ScrollController();
-  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +34,6 @@ class _DeliverySlotListScreenState extends ConsumerState<DeliverySlotListScreen>
   @override
   void dispose() {
     _scrollController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -53,43 +53,17 @@ class _DeliverySlotListScreenState extends ConsumerState<DeliverySlotListScreen>
       appBar: AppBar(title: const Text('Delivery Slots')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: 'Search slots',
-                      prefixIcon: Icon(Icons.search),
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (value) => ref
-                        .read(adminDeliverySlotsControllerProvider.notifier)
-                        .setFilter(state.filter.copyWith(search: value)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<bool?>(
-                  value: state.filter.status,
-                  hint: const Text('Status'),
-                  onChanged: (value) =>
-                      ref.read(adminDeliverySlotsControllerProvider.notifier).setFilter(
-                            value == null
-                                ? state.filter.copyWith(clearStatus: true)
-                                : state.filter.copyWith(status: value),
-                          ),
-                  items: const [
-                    DropdownMenuItem(value: null, child: Text('All')),
-                    DropdownMenuItem(value: true, child: Text('Active')),
-                    DropdownMenuItem(value: false, child: Text('Inactive')),
-                  ],
-                ),
-              ],
-            ),
+          EntityFilterBar(
+            filter: state.filter,
+            onChanged: ref.read(adminDeliverySlotsControllerProvider.notifier).setFilter,
+            searchHint: 'Search slots by name',
           ),
+          if (!state.loading || !state.paginated.isEmpty)
+            ListCountLine(
+              total: state.paginated.total,
+              singular: 'delivery slot',
+              plural: 'delivery slots',
+            ),
           Expanded(
             child: state.loading && state.paginated.isEmpty
                 ? const Center(child: CircularProgressIndicator())
@@ -104,7 +78,7 @@ class _DeliverySlotListScreenState extends ConsumerState<DeliverySlotListScreen>
                             ref.read(adminDeliverySlotsControllerProvider.notifier).refresh(),
                         child: ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.only(top: 4, bottom: 90),
                           itemCount: state.paginated.items.length + (state.loadingMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index >= state.paginated.items.length) {
@@ -116,10 +90,8 @@ class _DeliverySlotListScreenState extends ConsumerState<DeliverySlotListScreen>
 
                             final slot = state.paginated.items[index];
 
-                            return EntityListTile(
-                              title: slot.name,
-                              subtitle: slot.label,
-                              active: slot.status,
+                            return DeliverySlotListTile(
+                              slot: slot,
                               onTap: () => _openForm(existing: slot),
                             );
                           },
@@ -128,9 +100,10 @@ class _DeliverySlotListScreenState extends ConsumerState<DeliverySlotListScreen>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Slot'),
       ),
       bottomNavigationBar: const ShellTabBar(),
     );

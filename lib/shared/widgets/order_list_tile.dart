@@ -160,7 +160,7 @@ class OrderListTile extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Text(
-          '₹ ${order.orderAmount.toStringAsFixed(0)}',
+          order.amountLabel,
           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
         ),
       ],

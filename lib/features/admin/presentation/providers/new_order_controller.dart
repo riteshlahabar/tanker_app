@@ -14,9 +14,11 @@ class NewOrderState {
   final Order? placedOrder;
 }
 
-/// Backs the admin's "New Order" tab — a phone order typed in by hand, so
-/// (unlike the customer's own form) the amount is a field here, not
-/// server-computed.
+/// Backs the admin's "New Order" tab — a phone order written down by hand.
+///
+/// The amount is **not** a field: the admin picks the driver, the rate of the
+/// tanker that driver holds fills itself in, and `rate × tankers` is the
+/// total. Only a rate the admin types over becomes an override.
 @riverpod
 class NewOrderController extends _$NewOrderController {
   @override
@@ -24,11 +26,11 @@ class NewOrderController extends _$NewOrderController {
 
   Future<void> submit({
     required int customerId,
+    required int driverId,
     required String deliveryAddress,
     required DateTime deliveryDate,
-    required double orderAmount,
-    double? latitude,
-    double? longitude,
+    int? spotId,
+    double? tankerRate,
     int? deliverySlotId,
     int? tankerCount,
     String? notes,
@@ -37,11 +39,11 @@ class NewOrderController extends _$NewOrderController {
 
     final result = await ref.read(adminOrderRepositoryProvider).create(
           customerId: customerId,
+          driverId: driverId,
           deliveryAddress: deliveryAddress,
           deliveryDate: deliveryDate,
-          orderAmount: orderAmount,
-          latitude: latitude,
-          longitude: longitude,
+          spotId: spotId,
+          tankerRate: tankerRate,
           deliverySlotId: deliverySlotId,
           tankerCount: tankerCount,
           notes: notes,

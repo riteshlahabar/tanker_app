@@ -33,6 +33,16 @@ const appShadowColorDark = Color(0x1A3E3942);
 const appColorPrimary = Color(0xFF1157FA);
 const appLayout_background = Color(0xFFf8f8f8);
 
+/// The design's own primary, lightened 45% toward white, for use **as a label
+/// colour on dark surfaces only**.
+///
+/// Not a new hue and not a design decision: `appColorPrimary` on
+/// `cardBackgroundBlackDark` measures about 2.3:1, so a text or outlined
+/// button's label in dark mode was legible only if you knew it was there. The
+/// fill of a *filled* button is fine at #1157FA — a solid blue block reads
+/// clearly against #262626 — so only label colours use this.
+const appColorPrimaryOnDark = Color(0xFF7CA2FC);
+
 /// appetit's bottom-bar colour — also used for the app bar, by request, so
 /// the two bars read as one piece rather than two different treatments.
 const appBottomNavColor = Color(0xFF462F4C);

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/colors.dart';
+import '../../../../shared/widgets/active_switch_card.dart';
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../../shared/widgets/form_note.dart';
+import '../../../../shared/widgets/form_section_heading.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../domain/admin_customer.dart';
@@ -26,10 +30,6 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   final _password = TextEditingController();
   final _passwordConfirmation = TextEditingController();
   late final _address = TextEditingController(text: widget.existing?.address);
-  late final _latitude =
-      TextEditingController(text: widget.existing?.latitude?.toString() ?? '');
-  late final _longitude =
-      TextEditingController(text: widget.existing?.longitude?.toString() ?? '');
   late bool _canSelfOrder = widget.existing?.canSelfOrder ?? true;
   late bool _status = widget.existing?.status ?? true;
 
@@ -41,8 +41,6 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
     _password.dispose();
     _passwordConfirmation.dispose();
     _address.dispose();
-    _latitude.dispose();
-    _longitude.dispose();
     super.dispose();
   }
 
@@ -57,8 +55,6 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
             if (_password.text.isNotEmpty) 'password': _password.text,
             if (_password.text.isNotEmpty) 'password_confirmation': _passwordConfirmation.text,
             'address': _address.text.trim(),
-            'latitude': ?double.tryParse(_latitude.text.trim()),
-            'longitude': ?double.tryParse(_longitude.text.trim()),
             'can_self_order': _canSelfOrder,
             'status': _status,
           },
@@ -113,33 +109,47 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Three questions, grouped: who they are, how they sign in,
+              // and where the water goes. One undifferentiated stack of eight
+              // fields made the address — the one every booking falls back
+              // to — look like an afterthought at the bottom.
+              const FormSectionHeading('Who they are'),
               AppTextField(
                 controller: _firstName,
                 label: 'First name',
                 hint: '',
+                textInputAction: TextInputAction.next,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 12),
-              AppTextField(controller: _lastName, label: 'Last name', hint: 'Optional'),
+              AppTextField(
+                controller: _lastName,
+                label: 'Last name',
+                hint: 'Optional',
+                textInputAction: TextInputAction.next,
+              ),
               const SizedBox(height: 12),
               AppTextField(
                 controller: _mobile,
                 label: 'Mobile',
-                hint: '',
+                hint: 'Ten digits',
                 keyboardType: TextInputType.phone,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
+              const FormNote('This is what the customer signs in to the app with.'),
+
+              const FormSectionHeading('App sign-in'),
               AppTextField(
                 controller: _password,
                 label: isEditing ? 'New password (optional)' : 'Password',
-                hint: '',
+                hint: isEditing ? 'Leave blank to keep the current one' : 'At least 8 characters',
                 obscureText: true,
                 validator: (v) =>
                     (!isEditing && (v == null || v.isEmpty)) ? 'Required' : null,
@@ -154,53 +164,39 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     ? 'Passwords do not match'
                     : null,
               ),
-              const SizedBox(height: 12),
+
+              const FormSectionHeading('Where the water goes'),
               AppTextField(
                 controller: _address,
-                label: 'Address',
-                hint: 'Every order the customer places falls back to this',
+                label: 'Delivery address',
+                hint: 'House, street, area',
                 maxLines: 3,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      controller: _latitude,
-                      label: 'Latitude',
-                      hint: 'Optional',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppTextField(
-                      controller: _longitude,
-                      label: 'Longitude',
-                      hint: 'Optional',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 6),
+              const FormNote(
+                'Every order this customer places falls back to this address, so it is '
+                'required. They can still type a different one for a one-off delivery.',
               ),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Can place own orders'),
-                subtitle: const Text('Off = deliveries are a fixed routine the office manages'),
+
+              const FormSectionHeading('How they order'),
+              _SelfOrderCard(
                 value: _canSelfOrder,
                 onChanged: (value) => setState(() => _canSelfOrder = value),
               ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Active'),
+              const SizedBox(height: 12),
+              ActiveSwitchCard(
                 value: _status,
                 onChanged: (value) => setState(() => _status = value),
+                activeNote: 'Can sign in and appears on the New Order screen.',
+                inactiveNote: 'Cannot sign in, and no new order can be written for them.',
               ),
               if (formState.failure != null) ...[
-                const SizedBox(height: 8),
-                Text(formState.failure!.message, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                Text(
+                  formState.failure!.message,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ],
               const SizedBox(height: 24),
               PrimaryButton(
@@ -213,6 +209,57 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         ),
       ),
       bottomNavigationBar: const ShellTabBar(),
+    );
+  }
+}
+
+/// Whether the customer may place their own orders, said as a consequence
+/// rather than a switch labelled with a rule number — "off" here means the
+/// app refuses an order they try to place, which is not something a bare
+/// toggle communicates.
+class _SelfOrderCard extends StatelessWidget {
+  const _SelfOrderCard({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+      decoration: BoxDecoration(
+        color: appetitAppContainerColor.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            value ? Icons.phone_iphone : Icons.event_repeat,
+            size: 20,
+            color: appTextColorSecondary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value ? 'Orders from the app' : 'Fixed routine',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value
+                      ? 'They book their own tankers whenever they need one.'
+                      : 'The office manages their deliveries; the app refuses an order they place.',
+                  style: const TextStyle(fontSize: 12, color: appTextColorSecondary),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: value, onChanged: onChanged),
+        ],
+      ),
     );
   }
 }

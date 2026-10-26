@@ -32,14 +32,6 @@ class _FakeSpotRepository implements SpotRepository {
           'status': true,
         }),
       ]);
-
-  @override
-  Future<ApiResult<List<Spot>>> nearby({
-    required double latitude,
-    required double longitude,
-    int limit = 10,
-  }) =>
-      throw UnimplementedError();
 }
 
 void main() {

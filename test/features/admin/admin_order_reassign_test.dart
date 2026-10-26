@@ -41,11 +41,11 @@ class _FakeRepository implements AdminOrderRepository {
   @override
   Future<ApiResult<Order>> create({
     required int customerId,
+    required int driverId,
     required String deliveryAddress,
     required DateTime deliveryDate,
-    required double orderAmount,
-    double? latitude,
-    double? longitude,
+    int? spotId,
+    double? tankerRate,
     int? deliverySlotId,
     int? tankerCount,
     String? notes,

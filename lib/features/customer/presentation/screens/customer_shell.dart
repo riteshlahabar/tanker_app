@@ -3,13 +3,19 @@ import 'package:flutter/material.dart';
 import '../../../../shared/models/nav_tab.dart';
 import '../../../../shared/screens/account_profile_screen.dart';
 import '../../../../shared/widgets/role_shell.dart';
+import 'billing_screen.dart';
 import 'customer_home_screen.dart';
 import 'my_orders_screen.dart';
-import 'notifications_screen.dart';
 import 'place_order_screen.dart';
 
-/// What a customer sees: place an order, follow their own orders, read
-/// notices, manage their account. No drawer — that is the admin's alone.
+/// What a customer sees: place an order, follow their own orders, check what
+/// they have been billed, manage their account. No drawer — that is the
+/// admin's alone.
+///
+/// The fourth tab was Notifications, which had nothing to show: every real
+/// notice goes out over WhatsApp, so the screen listed the customer's orders
+/// again under a bell. Billing answers the question they actually open the
+/// app with.
 class CustomerShell extends StatelessWidget {
   const CustomerShell({super.key});
 
@@ -36,10 +42,10 @@ class CustomerShell extends StatelessWidget {
           body: MyOrdersScreen(),
         ),
         NavTab(
-          label: 'Notifications',
-          icon: Icons.notifications_outlined,
-          title: 'Notifications',
-          body: NotificationsScreen(),
+          label: 'Billing',
+          icon: Icons.receipt_long_outlined,
+          title: 'My Billing',
+          body: BillingScreen(),
         ),
         NavTab(
           label: 'Profile',

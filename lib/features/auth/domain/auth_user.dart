@@ -15,8 +15,6 @@ class AuthUser {
     this.email,
     this.mobile,
     this.address,
-    this.latitude,
-    this.longitude,
     this.monthlySalary,
   });
 
@@ -37,8 +35,6 @@ class AuthUser {
 
   /// `num` on the wire, so read through [JsonRead.asDoubleOrNull] — an
   /// integral value arrives as an `int` and `as double` would throw.
-  final double? latitude;
-  final double? longitude;
 
   /// What a driver is paid each month. Null for an admin or a customer, which
   /// is why it is nullable rather than zero — the Profile screen is shared by
@@ -56,8 +52,6 @@ class AuthUser {
         email: JsonRead.asStringOrNull(json['email']),
         mobile: JsonRead.asStringOrNull(json['mobile']),
         address: JsonRead.asStringOrNull(json['address']),
-        latitude: JsonRead.asDoubleOrNull(json['latitude']),
-        longitude: JsonRead.asDoubleOrNull(json['longitude']),
         monthlySalary: JsonRead.asDoubleOrNull(json['monthly_salary']),
       );
 

@@ -9,13 +9,18 @@ abstract interface class AdminOrderRepository {
 
   Future<ApiResult<Order>> show(int orderId);
 
+  /// Places *and assigns* in one step, exactly as the panel's New Order form
+  /// does: the driver is named here because the price of the order is the rate
+  /// of the tanker they hold. There is no amount to send — the server works it
+  /// out from `tankerRate × tankerCount`, and `tankerRate` is only passed when
+  /// the admin typed over the vehicle's own.
   Future<ApiResult<Order>> create({
     required int customerId,
+    required int driverId,
     required String deliveryAddress,
     required DateTime deliveryDate,
-    required double orderAmount,
-    double? latitude,
-    double? longitude,
+    int? spotId,
+    double? tankerRate,
     int? deliverySlotId,
     int? tankerCount,
     String? notes,

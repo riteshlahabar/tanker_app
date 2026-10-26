@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../domain/admin_driver.dart';
+import 'admin_pill.dart';
 
 /// One row of the admin's Drivers list.
 ///
@@ -87,7 +88,7 @@ class DriverListTile extends StatelessWidget {
         ),
         if (!driver.status) ...[
           const SizedBox(width: 8),
-          const _Pill(label: 'Inactive', color: statusCancelledColor),
+          const AdminPill(label: 'Inactive', color: statusCancelledColor),
         ],
       ],
     );
@@ -149,37 +150,13 @@ class DriverListTile extends StatelessWidget {
           // for a monthly salary, and the owner still has to set each real
           // figure (CLAUDE.md, Blocked on the owner). A confident "₹ 0 / mo"
           // would read as a decision rather than an omission.
-          const _Pill(label: 'Salary not set', color: statusPendingColor)
+          const AdminPill(label: 'Salary not set', color: statusPendingColor)
         else
           Text(
             '₹ ${_money.format(driver.monthlySalary)} / mo',
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
           ),
       ],
-    );
-  }
-}
-
-/// A small tinted pill. The status chip's shape, without tying it to
-/// [OrderStatus] — a driver has no order status to read a colour from.
-class _Pill extends StatelessWidget {
-  const _Pill({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.w600),
-      ),
     );
   }
 }

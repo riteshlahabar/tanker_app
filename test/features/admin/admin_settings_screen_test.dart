@@ -6,15 +6,16 @@ import 'package:tanker_app/features/admin/domain/admin_settings_repository.dart'
 import 'package:tanker_app/features/admin/presentation/providers/admin_providers.dart';
 import 'package:tanker_app/features/admin/presentation/screens/admin_settings_screen.dart';
 
-/// Drivers went onto a monthly salary on 2026-10-17 and
-/// `UpdateSettingRequest` now requires `default_monthly_salary`. The app's
-/// Settings screen was the one surface the rename missed: it still showed
-/// "Default driver rate (per delivery)" and, worse, still POSTed the dropped
-/// `default_driver_rate` key — so every save came back 422 for a missing
-/// required field.
+/// Settings is down to the two keys `UpdateSettingRequest` still validates.
+/// The rate per tanker, the monthly salary and the daily report time left the
+/// screen because none of them was a setting: the first two belong to the
+/// tanker and the driver, and the third only described a schedule in
+/// `routes/console.php`.
 ///
-/// The keys are therefore asserted, not just the label. A label is cosmetic; a
-/// key is the contract with the panel, and nothing else enforces it.
+/// The keys are asserted, not just the labels. A label is cosmetic; a key is
+/// the contract with the panel, which drops an unknown one silently and 422s
+/// a missing required one — and nothing else enforces it. This screen has
+/// been wrong that way twice.
 class _FakeRepository implements AdminSettingsRepository {
   _FakeRepository({this.stored = const {}});
 
@@ -36,9 +37,6 @@ class _FakeRepository implements AdminSettingsRepository {
 const _storedSettings = <String, String?>{
   'company_name': 'WTMS',
   'admin_whatsapp_number': '919812345678',
-  'default_monthly_salary': '18000',
-  'default_tanker_rate': '1100',
-  'daily_report_time': '23:59',
 };
 
 void main() {
@@ -65,22 +63,25 @@ void main() {
   }
 
   /// What is actually in the inputs. `find.text` cannot be trusted for a field
-  /// value here: InputDecorator also builds the hint, and the daily-report
-  /// field's hint is the very string its value usually is ("23:59").
+  /// value here, because InputDecorator also builds the hint.
   List<String> fieldValues(WidgetTester tester) => tester
       .widgetList<EditableText>(find.byType(EditableText))
       .map((field) => field.controller.text)
       .toList();
 
-  testWidgets('the salary field is monthly, and per-delivery wording is gone', (tester) async {
+  testWidgets('only the business fields are left, and they carry their stored values', (tester) async {
     await pumpSettings(tester);
 
-    expect(find.text('Default monthly salary (₹)'), findsOneWidget);
-    expect(find.textContaining('per delivery)'), findsNothing);
-    expect(find.textContaining('driver rate'), findsNothing);
-    // The stored value has to reach the field, or the owner would overwrite a
-    // real salary with a default.
-    expect(fieldValues(tester), contains('18000'));
+    expect(find.text('Company name'), findsOneWidget);
+    expect(find.text('Owner WhatsApp number'), findsOneWidget);
+    expect(fieldValues(tester), containsAll(<String>['WTMS', '919812345678']));
+
+    // Two inputs, not five: a figure still on this screen is a figure that
+    // disagrees with the tanker or the driver it was moved to.
+    expect(fieldValues(tester).length, 2);
+    expect(find.textContaining('monthly salary (₹)'), findsNothing);
+    expect(find.textContaining('rate per tanker (₹)'), findsNothing);
+    expect(find.textContaining('Daily report time'), findsNothing);
   });
 
   testWidgets('saving posts the key the panel requires', (tester) async {
@@ -91,46 +92,36 @@ void main() {
 
     final sent = repository.sent!;
 
-    expect(sent.keys, contains('default_monthly_salary'));
-    expect(sent.keys, isNot(contains('default_driver_rate')));
-    expect(sent['default_monthly_salary'], '18000');
+    // Both of UpdateSettingRequest's fields, exactly — a missing required one
+    // is a 422, and every key the panel has dropped would be ignored at best.
+    expect(sent.keys.toSet(), {'company_name', 'admin_whatsapp_number'});
+    expect(sent['company_name'], 'WTMS');
 
-    // All five of UpdateSettingRequest's fields, exactly — a missing required
-    // one is a 422 and an unknown one is silently dropped. The flat
-    // `default_order_amount` is gone: an order is rate × tanker_count, so
-    // posting it again would be a 422 on an unknown key's absent partner.
-    expect(
-      sent.keys.toSet(),
-      {
-        'company_name',
-        'admin_whatsapp_number',
-        'default_monthly_salary',
-        'default_tanker_rate',
-        'daily_report_time',
-      },
-    );
-    expect(sent.keys, isNot(contains('default_order_amount')));
-    expect(sent.keys, isNot(contains('price_per_tanker')));
+    for (final gone in const [
+      'default_monthly_salary',
+      'default_tanker_rate',
+      'daily_report_time',
+      'default_order_amount',
+      'price_per_tanker',
+      'default_driver_rate',
+    ]) {
+      expect(sent.keys, isNot(contains(gone)));
+    }
   });
 
   testWidgets('a server with no settings rows opens on the panel defaults', (tester) async {
-    // GET /api/admin/settings answers [] on the live server, which left every
-    // field blank and made the first save 422 on five required fields.
+    // GET /api/admin/settings answers [] on the live server, which left the
+    // fields blank and made the first save 422 on the required company name.
     final repository = await pumpSettings(tester, stored: const {});
 
-    expect(
-      fieldValues(tester),
-      containsAll(<String>['Tanker', '15000', '23:59']),
-    );
+    expect(fieldValues(tester), contains('Tanker'));
 
     await tester.tap(find.text('Save Settings'));
     await tester.pumpAndSettle();
 
     final sent = repository.sent!;
 
-    expect(sent['default_monthly_salary'], '15000');
-    expect(sent['default_tanker_rate'], '0');
-    expect(sent['daily_report_time'], '23:59');
+    expect(sent['company_name'], 'Tanker');
     // Optional, and the panel invents nothing for it either.
     expect(sent['admin_whatsapp_number'], '');
   });

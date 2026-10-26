@@ -2,13 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../../shared/widgets/form_note.dart';
+import '../../../../shared/widgets/form_section_heading.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_settings_controller.dart';
 
-/// The six fields `UpdateSettingRequest` validates, mirroring the web panel's
+/// The two fields `UpdateSettingRequest` validates, mirroring the web panel's
 /// own Settings screen field-for-field — same keys, same labels, same help
 /// text, so the two cannot describe the same setting differently.
+///
+/// It held five. Three left because none of them was really a setting:
+///
+///  * **Default rate per tanker** — the price of a load belongs to the vehicle
+///    that carries it, and the owner's tankers are not the same size, so one
+///    global figure was wrong for every tanker with a rate of its own.
+///  * **Default monthly salary** — what a driver is paid is on the driver, and
+///    the salary report reads nothing else; a second figure here could only
+///    disagree with the real ones while looking like it set them.
+///  * **Daily report time** — documentation pretending to be a field. The
+///    23:59 WhatsApp report is scheduled in `routes/console.php` and editing
+///    this moved nothing.
 class AdminSettingsScreen extends ConsumerStatefulWidget {
   const AdminSettingsScreen({super.key});
 
@@ -19,30 +33,18 @@ class AdminSettingsScreen extends ConsumerStatefulWidget {
 class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   final _companyName = TextEditingController();
   final _whatsappNumber = TextEditingController();
-  final _monthlySalary = TextEditingController();
-  final _tankerRate = TextEditingController();
-  final _reportTime = TextEditingController();
   bool _loaded = false;
 
   /// What the panel's own form falls back to when a settings row is missing
   /// (`setting::_partials.fields`). The app had shown blanks instead, and
-  /// since five of the six are `required`, a first save on a server with no
-  /// settings rows came straight back as a 422 — which is exactly the state
-  /// the live server is in.
-  static const _panelDefaults = <String, String>{
-    'company_name': 'Tanker',
-    'default_monthly_salary': '15000',
-    'default_tanker_rate': '0',
-    'daily_report_time': '23:59',
-  };
+  /// since `company_name` is required, a first save on a server with no
+  /// settings rows came straight back as a 422.
+  static const _panelDefaults = <String, String>{'company_name': 'Tanker'};
 
   @override
   void dispose() {
     _companyName.dispose();
     _whatsappNumber.dispose();
-    _monthlySalary.dispose();
-    _tankerRate.dispose();
-    _reportTime.dispose();
     super.dispose();
   }
 
@@ -60,18 +62,12 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     _companyName.text = _valueOf(values, 'company_name');
     // The one genuinely optional field, so no default is invented for it.
     _whatsappNumber.text = values['admin_whatsapp_number'] ?? '';
-    _monthlySalary.text = _valueOf(values, 'default_monthly_salary');
-    _tankerRate.text = _valueOf(values, 'default_tanker_rate');
-    _reportTime.text = _valueOf(values, 'daily_report_time');
   }
 
   Future<void> _save() async {
     final message = await ref.read(adminSettingsControllerProvider.notifier).save({
       'company_name': _companyName.text.trim(),
       'admin_whatsapp_number': _whatsappNumber.text.trim(),
-      'default_monthly_salary': _monthlySalary.text.trim(),
-      'default_tanker_rate': _tankerRate.text.trim(),
-      'daily_report_time': _reportTime.text.trim(),
     });
 
     if (!mounted || message == null) return;
@@ -98,11 +94,16 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppTextField(controller: _companyName, label: 'Company name', hint: ''),
+            const FormSectionHeading('The business'),
+            AppTextField(
+              controller: _companyName,
+              label: 'Company name',
+              hint: 'Shown on the panel and in messages',
+            ),
             const SizedBox(height: 12),
             AppTextField(
               controller: _whatsappNumber,
@@ -110,36 +111,31 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
               hint: 'With country code, digits only, e.g. 919812345678',
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _monthlySalary,
-              // Drivers are salaried monthly, not paid per delivery — this
-              // field used to say "rate (per delivery)" and, worse, still
-              // posted the dropped `default_driver_rate` key.
-              label: 'Default monthly salary (₹)',
-              hint: "Pre-filled on a new driver. Each driver's own salary is set on their form",
-              keyboardType: TextInputType.number,
+            const SizedBox(height: 6),
+            const FormNote(
+              'Every owner notification and the nightly report go to this number.',
             ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _tankerRate,
-              // Water is sold by the load, so there is one unit in the system:
-              // an order is this rate × the number of tankers. The old flat
-              // `default_order_amount` beside it ignored the count, which made
-              // the same number mean two different prices.
-              label: 'Default rate per tanker (₹)',
-              hint: 'One tanker-load, for vehicles with no rate of their own. 0 = pricing not set up yet',
-              keyboardType: TextInputType.number,
+
+            const FormSectionHeading('Set elsewhere'),
+            const _ElsewhereCard(
+              icon: Icons.local_shipping_outlined,
+              title: 'Rate per tanker',
+              body: 'On each tanker, under Tankers. An order is that rate × the number '
+                  'of tankers — there is no global default.',
             ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _reportTime,
-              label: 'Daily report time (HH:mm)',
-              hint: '23:59',
+            const SizedBox(height: 10),
+            const _ElsewhereCard(
+              icon: Icons.person_outline,
+              title: 'Monthly salary',
+              body: "On each driver, under Drivers. It is what the Driver Salary report reads.",
             ),
+
             if (state.error != null) ...[
               const SizedBox(height: 12),
-              Text(state.error!.message, style: const TextStyle(color: Colors.red)),
+              Text(
+                state.error!.message,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: 24),
             PrimaryButton(label: 'Save Settings', busy: state.saving, onPressed: _save),
@@ -147,6 +143,53 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         ),
       ),
       bottomNavigationBar: const ShellTabBar(),
+    );
+  }
+}
+
+/// A figure that used to be on this screen, saying where it actually lives.
+///
+/// Worth the space: the owner looked for these here, and a screen that simply
+/// stopped showing them reads as something missing rather than something moved.
+class _ElsewhereCard extends StatelessWidget {
+  const _ElsewhereCard({required this.icon, required this.title, required this.body});
+
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Theme.of(context).cardColor
+            : Theme.of(context).dividerColor.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Theme.of(context).hintColor),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                const SizedBox(height: 3),
+                Text(
+                  body,
+                  style: TextStyle(fontSize: 12, height: 1.35, color: Theme.of(context).hintColor),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

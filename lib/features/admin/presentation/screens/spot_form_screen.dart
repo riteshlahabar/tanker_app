@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/models/spot.dart';
+import '../../../../core/theme/colors.dart';
+import '../../../../shared/widgets/active_switch_card.dart';
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../../shared/widgets/form_note.dart';
+import '../../../../shared/widgets/form_section_heading.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../providers/admin_providers.dart';
@@ -22,10 +26,6 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.existing?.name);
   late final _address = TextEditingController(text: widget.existing?.address);
-  late final _latitude =
-      TextEditingController(text: widget.existing?.latitude?.toString() ?? '');
-  late final _longitude =
-      TextEditingController(text: widget.existing?.longitude?.toString() ?? '');
   late final _refillCharge =
       TextEditingController(text: widget.existing?.refillCharge.toStringAsFixed(0) ?? '');
   late final _waterType = TextEditingController(text: widget.existing?.waterType);
@@ -38,8 +38,6 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
   void dispose() {
     _name.dispose();
     _address.dispose();
-    _latitude.dispose();
-    _longitude.dispose();
     _refillCharge.dispose();
     _waterType.dispose();
     _contactPerson.dispose();
@@ -53,15 +51,11 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
     await ref.read(adminSpotFormControllerProvider.notifier).submit(
           {
             'name': _name.text.trim(),
-            'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
-            'latitude': ?double.tryParse(_latitude.text.trim()),
-            'longitude': ?double.tryParse(_longitude.text.trim()),
+            'address': _address.text.trim(),
             'refill_charge': double.tryParse(_refillCharge.text.trim()) ?? 0,
             'water_type': _waterType.text.trim().isEmpty ? null : _waterType.text.trim(),
-            'contact_person':
-                _contactPerson.text.trim().isEmpty ? null : _contactPerson.text.trim(),
-            'contact_mobile':
-                _contactMobile.text.trim().isEmpty ? null : _contactMobile.text.trim(),
+            'contact_person': _contactPerson.text.trim(),
+            'contact_mobile': _contactMobile.text.trim(),
             'is_available': _isAvailable,
             'status': _status,
           },
@@ -116,77 +110,94 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const FormSectionHeading('The point'),
               AppTextField(
                 controller: _name,
                 label: 'Name',
-                hint: '',
+                hint: 'e.g. Hadapsar Borewell',
+                textInputAction: TextInputAction.next,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 12),
-              AppTextField(controller: _address, label: 'Address', hint: 'Optional', maxLines: 3),
+              AppTextField(
+                controller: _address,
+                label: 'Address',
+                hint: 'How the driver finds it',
+                maxLines: 3,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              ),
+              const SizedBox(height: 6),
+              const FormNote(
+                'Required: the address is the only thing that says where this point is.',
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: AppTextField(
-                      controller: _latitude,
-                      label: 'Latitude',
-                      hint: 'Optional',
+                      controller: _refillCharge,
+                      label: 'Refill charge (₹)',
+                      hint: 'Per fill',
                       keyboardType: TextInputType.number,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: AppTextField(
-                      controller: _longitude,
-                      label: 'Longitude',
-                      hint: 'Optional',
-                      keyboardType: TextInputType.number,
+                      controller: _waterType,
+                      label: 'Water type',
+                      hint: 'Borewell, RO',
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
+              const FormNote('The refill charge is snapshotted onto each order filled here.'),
+
+              const FormSectionHeading('Who to ring'),
               AppTextField(
-                controller: _refillCharge,
-                label: 'Refill charge',
-                hint: '',
-                keyboardType: TextInputType.number,
+                controller: _contactPerson,
+                label: 'Contact person',
+                hint: 'Who keeps the point',
+                textInputAction: TextInputAction.next,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
-              AppTextField(controller: _waterType, label: 'Water type', hint: 'Optional'),
-              const SizedBox(height: 12),
-              AppTextField(controller: _contactPerson, label: 'Contact person', hint: 'Optional'),
               const SizedBox(height: 12),
               AppTextField(
                 controller: _contactMobile,
                 label: 'Contact mobile',
-                hint: 'Optional',
+                hint: 'e.g. 9876543210',
                 keyboardType: TextInputType.phone,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Available'),
+              const SizedBox(height: 6),
+              const FormNote('The driver rings this if the point is shut or the queue is long.'),
+
+              const FormSectionHeading('Right now'),
+              _AvailabilityCard(
                 value: _isAvailable,
                 onChanged: (value) => setState(() => _isAvailable = value),
               ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Active'),
+              const SizedBox(height: 12),
+              ActiveSwitchCard(
                 value: _status,
                 onChanged: (value) => setState(() => _status = value),
+                activeNote: 'Offered on the order and assign screens.',
+                inactiveNote: 'Hidden everywhere; existing orders keep the charge already saved.',
               ),
               if (formState.failure != null) ...[
-                const SizedBox(height: 8),
-                Text(formState.failure!.message, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                Text(
+                  formState.failure!.message,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ],
               const SizedBox(height: 24),
               PrimaryButton(
@@ -199,6 +210,58 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
         ),
       ),
       bottomNavigationBar: const ShellTabBar(),
+    );
+  }
+}
+
+/// Available today or not — a different question from Active, and the one the
+/// driver feels: an unavailable point is skipped on the route even though the
+/// owner still keeps it on the books.
+class _AvailabilityCard extends StatelessWidget {
+  const _AvailabilityCard({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = value ? statusDeliveredColor : statusPendingColor;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+      decoration: BoxDecoration(
+        color: appetitAppContainerColor.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value ? 'Available' : 'Unavailable',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value
+                      ? 'A driver can fill here today.'
+                      : 'Dry, shut or queued — not offered for a refill today.',
+                  style: const TextStyle(fontSize: 12, color: appTextColorSecondary),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: value, onChanged: onChanged, activeTrackColor: accent),
+        ],
+      ),
     );
   }
 }

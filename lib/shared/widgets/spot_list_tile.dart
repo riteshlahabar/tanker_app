@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/theme/colors.dart';
 import '../models/spot.dart';
 
-/// One row of a spot list: name, address, refill charge, and distance when
-/// the query was location-based.
+/// One row of a filling-point list: name, address, refill charge and the
+/// number to ring.
 class SpotListTile extends StatelessWidget {
   const SpotListTile({super.key, required this.spot});
 
@@ -30,9 +30,9 @@ class SpotListTile extends StatelessWidget {
                     Expanded(
                       child: Text(spot.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                     ),
-                    if (spot.distanceKm != null)
+                    if (spot.waterType != null)
                       Text(
-                        '${spot.distanceKm!.toStringAsFixed(1)} km',
+                        spot.waterType!,
                         style: const TextStyle(color: appColorPrimary, fontWeight: FontWeight.w600),
                       ),
                   ],
