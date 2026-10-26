@@ -100,6 +100,23 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
     super.dispose();
   }
 
+  /// Choosing a customer fills in the address they are registered at, as the
+  /// panel's form does — but only when the box is empty, so a typed address is
+  /// never overwritten.
+  ///
+  /// Clearing it afterwards is a real choice here: a routine with no address of
+  /// its own resolves the customer's registered address **each time an order is
+  /// generated**, so it follows them if they move.
+  void _onCustomerChosen(CustomerOption customer) {
+    setState(() {
+      _customer = customer;
+
+      final address = customer.address ?? '';
+
+      if (_address.text.trim().isEmpty && address.isNotEmpty) _address.text = address;
+    });
+  }
+
   Future<void> _pickDriver() async {
     final chosen = await showModalBottomSheet<DriverOption>(
       context: context,
@@ -276,7 +293,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
               else
                 _CustomerPickerField(
                   chosen: _customer,
-                  onChosen: (c) => setState(() => _customer = c),
+                  onChosen: _onCustomerChosen,
                 ),
               const SizedBox(height: 16),
               const Text('Pattern', style: TextStyle(fontWeight: FontWeight.w700)),
