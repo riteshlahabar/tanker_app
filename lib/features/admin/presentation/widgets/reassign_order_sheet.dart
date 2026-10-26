@@ -128,9 +128,9 @@ class _ReassignOrderSheetState extends ConsumerState<ReassignOrderSheet> {
             // row overflows instead of ellipsizing on a narrow phone.
             isExpanded: true,
             initialValue: _chosenSpotId,
-            decoration: const InputDecoration(labelText: 'Refill spot'),
+            decoration: const InputDecoration(labelText: 'Filling point'),
             items: [
-              const DropdownMenuItem(value: null, child: Text('Keep the current spot')),
+              const DropdownMenuItem(value: null, child: Text('Keep the current filling point')),
               ..._spotOptions.map((spot) => DropdownMenuItem(value: spot.id, child: Text(spot.name))),
             ],
             onChanged: (value) => setState(() => _chosenSpotId = value),

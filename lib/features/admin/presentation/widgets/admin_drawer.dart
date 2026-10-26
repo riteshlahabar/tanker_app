@@ -50,7 +50,7 @@ class AdminDrawer extends ConsumerWidget {
           ),
           _DrawerItem(
             icon: Icons.water_drop_outlined,
-            label: 'Refill Spots',
+            label: 'Filling Points',
             screenBuilder: (_) => const SpotListScreen(),
           ),
           _DrawerItem(

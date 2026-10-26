@@ -56,7 +56,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
             'mobile': _mobile.text.trim(),
             if (_password.text.isNotEmpty) 'password': _password.text,
             if (_password.text.isNotEmpty) 'password_confirmation': _passwordConfirmation.text,
-            'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
+            'address': _address.text.trim(),
             'latitude': ?double.tryParse(_latitude.text.trim()),
             'longitude': ?double.tryParse(_longitude.text.trim()),
             'can_self_order': _canSelfOrder,
@@ -155,7 +155,13 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     : null,
               ),
               const SizedBox(height: 12),
-              AppTextField(controller: _address, label: 'Address', hint: 'Optional', maxLines: 3),
+              AppTextField(
+                controller: _address,
+                label: 'Address',
+                hint: 'Every order the customer places falls back to this',
+                maxLines: 3,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [

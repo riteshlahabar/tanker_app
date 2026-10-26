@@ -37,8 +37,7 @@ const _storedSettings = <String, String?>{
   'company_name': 'WTMS',
   'admin_whatsapp_number': '919812345678',
   'default_monthly_salary': '18000',
-  'default_order_amount': '900',
-  'price_per_tanker': '1100',
+  'default_tanker_rate': '1100',
   'daily_report_time': '23:59',
 };
 
@@ -96,19 +95,22 @@ void main() {
     expect(sent.keys, isNot(contains('default_driver_rate')));
     expect(sent['default_monthly_salary'], '18000');
 
-    // All six of UpdateSettingRequest's fields, exactly — a missing required
-    // one is a 422 and an unknown one is silently dropped.
+    // All five of UpdateSettingRequest's fields, exactly — a missing required
+    // one is a 422 and an unknown one is silently dropped. The flat
+    // `default_order_amount` is gone: an order is rate × tanker_count, so
+    // posting it again would be a 422 on an unknown key's absent partner.
     expect(
       sent.keys.toSet(),
       {
         'company_name',
         'admin_whatsapp_number',
         'default_monthly_salary',
-        'default_order_amount',
-        'price_per_tanker',
+        'default_tanker_rate',
         'daily_report_time',
       },
     );
+    expect(sent.keys, isNot(contains('default_order_amount')));
+    expect(sent.keys, isNot(contains('price_per_tanker')));
   });
 
   testWidgets('a server with no settings rows opens on the panel defaults', (tester) async {
@@ -127,7 +129,7 @@ void main() {
     final sent = repository.sent!;
 
     expect(sent['default_monthly_salary'], '15000');
-    expect(sent['price_per_tanker'], '0');
+    expect(sent['default_tanker_rate'], '0');
     expect(sent['daily_report_time'], '23:59');
     // Optional, and the panel invents nothing for it either.
     expect(sent['admin_whatsapp_number'], '');

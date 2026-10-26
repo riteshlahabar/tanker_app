@@ -20,8 +20,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   final _companyName = TextEditingController();
   final _whatsappNumber = TextEditingController();
   final _monthlySalary = TextEditingController();
-  final _orderAmount = TextEditingController();
-  final _pricePerTanker = TextEditingController();
+  final _tankerRate = TextEditingController();
   final _reportTime = TextEditingController();
   bool _loaded = false;
 
@@ -33,8 +32,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   static const _panelDefaults = <String, String>{
     'company_name': 'Tanker',
     'default_monthly_salary': '15000',
-    'default_order_amount': '0',
-    'price_per_tanker': '0',
+    'default_tanker_rate': '0',
     'daily_report_time': '23:59',
   };
 
@@ -43,8 +41,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     _companyName.dispose();
     _whatsappNumber.dispose();
     _monthlySalary.dispose();
-    _orderAmount.dispose();
-    _pricePerTanker.dispose();
+    _tankerRate.dispose();
     _reportTime.dispose();
     super.dispose();
   }
@@ -64,8 +61,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     // The one genuinely optional field, so no default is invented for it.
     _whatsappNumber.text = values['admin_whatsapp_number'] ?? '';
     _monthlySalary.text = _valueOf(values, 'default_monthly_salary');
-    _orderAmount.text = _valueOf(values, 'default_order_amount');
-    _pricePerTanker.text = _valueOf(values, 'price_per_tanker');
+    _tankerRate.text = _valueOf(values, 'default_tanker_rate');
     _reportTime.text = _valueOf(values, 'daily_report_time');
   }
 
@@ -74,8 +70,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       'company_name': _companyName.text.trim(),
       'admin_whatsapp_number': _whatsappNumber.text.trim(),
       'default_monthly_salary': _monthlySalary.text.trim(),
-      'default_order_amount': _orderAmount.text.trim(),
-      'price_per_tanker': _pricePerTanker.text.trim(),
+      'default_tanker_rate': _tankerRate.text.trim(),
       'daily_report_time': _reportTime.text.trim(),
     });
 
@@ -127,16 +122,13 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             ),
             const SizedBox(height: 12),
             AppTextField(
-              controller: _orderAmount,
-              label: 'Default order amount (₹)',
-              hint: 'Flat price per delivery. Pre-filled on a new order',
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _pricePerTanker,
-              label: 'Price per tanker (₹)',
-              hint: 'One tanker-load, for vehicles with no rate of their own. 0 = the flat amount',
+              controller: _tankerRate,
+              // Water is sold by the load, so there is one unit in the system:
+              // an order is this rate × the number of tankers. The old flat
+              // `default_order_amount` beside it ignored the count, which made
+              // the same number mean two different prices.
+              label: 'Default rate per tanker (₹)',
+              hint: 'One tanker-load, for vehicles with no rate of their own. 0 = pricing not set up yet',
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),

@@ -24,7 +24,7 @@ class AdminTanker {
   final int? capacityLitres;
 
   /// What one tanker-load from this vehicle costs. Null falls through to the
-  /// price_per_tanker setting.
+  /// default_tanker_rate setting.
   final double? tankerRate;
   final int? modelYear;
   final String? rcNumber;

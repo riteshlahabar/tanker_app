@@ -121,7 +121,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                 if (order.driverName != null)
                   _detailRow(Icons.local_shipping_outlined, 'Driver: ${order.driverName}'),
                 if (order.spotName != null)
-                  _detailRow(Icons.water_drop_outlined, 'Spot: ${order.spotName}'),
+                  _detailRow(Icons.water_drop_outlined, 'Filling point: ${order.spotName}'),
                 if (order.notes != null && order.notes!.isNotEmpty)
                   _detailRow(Icons.notes_outlined, order.notes!),
                 if (order.isScheduled)

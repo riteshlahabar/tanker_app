@@ -81,7 +81,7 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete this spot?'),
+        title: const Text('Delete this filling point?'),
         content: const Text('This cannot be undone.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
@@ -110,7 +110,7 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit Spot' : 'Add Spot'),
+        title: Text(isEditing ? 'Edit Filling Point' : 'Add Filling Point'),
         actions: [
           if (isEditing) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
         ],
@@ -190,7 +190,7 @@ class _SpotFormScreenState extends ConsumerState<SpotFormScreen> {
               ],
               const SizedBox(height: 24),
               PrimaryButton(
-                label: isEditing ? 'Save Changes' : 'Add Spot',
+                label: isEditing ? 'Save Changes' : 'Add Filling Point',
                 busy: formState.submitting,
                 onPressed: _submit,
               ),

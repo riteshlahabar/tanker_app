@@ -83,7 +83,7 @@ void main() {
       'Tankers',
       'Drivers',
       'Customers',
-      'Refill Spots',
+      'Filling Points',
       'Standing Orders',
       'Delivery Slots',
       'Driver Expenses',

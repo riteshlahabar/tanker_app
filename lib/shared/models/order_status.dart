@@ -31,7 +31,7 @@ enum OrderStatus {
   String get label => switch (this) {
         OrderStatus.pending => 'Pending',
         OrderStatus.assigned => 'Assigned',
-        OrderStatus.refilling => 'Refilling at Spot',
+        OrderStatus.refilling => 'Refilling at Filling Point',
         OrderStatus.outForDelivery => 'Out for Delivery',
         OrderStatus.delivered => 'Delivered',
         OrderStatus.cancelled => 'Cancelled',

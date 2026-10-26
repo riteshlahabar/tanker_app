@@ -19,7 +19,7 @@ class DriverSpotsScreen extends ConsumerWidget {
     if (state.spots.isEmpty) {
       return EmptyState(
         icon: Icons.water_drop_outlined,
-        title: 'No spots available',
+        title: 'No filling points available',
         message: state.error?.message,
       );
     }
@@ -38,7 +38,7 @@ class DriverSpotsScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
-                'Showing all spots — enable location to see the nearest ones first.',
+                'Showing all filling points — enable location to see the nearest ones first.',
                 style: TextStyle(fontSize: 13),
               ),
             ),

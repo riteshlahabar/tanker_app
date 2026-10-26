@@ -81,7 +81,7 @@ class _AssignOrderSheetState extends ConsumerState<AssignOrderSheet> {
             // row overflows instead of ellipsizing on a narrow phone.
             isExpanded: true,
             initialValue: _chosenSpotId,
-            decoration: const InputDecoration(labelText: 'Refill spot (optional)'),
+            decoration: const InputDecoration(labelText: 'Filling point (optional)'),
             items: [
               const DropdownMenuItem(value: null, child: Text('No override')),
               ..._spotOptions.map((spot) => DropdownMenuItem(value: spot.id, child: Text(spot.name))),

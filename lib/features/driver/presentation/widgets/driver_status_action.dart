@@ -49,9 +49,9 @@ class DriverStatusAction extends ConsumerWidget {
                 // row overflows instead of ellipsizing on a narrow phone.
                 isExpanded: true,
                 initialValue: chosenSpotId,
-                decoration: const InputDecoration(labelText: 'Spot', border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: 'Filling point', border: OutlineInputBorder()),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('Use the assigned spot')),
+                  const DropdownMenuItem(value: null, child: Text('Use the assigned filling point')),
                   ...options.map((spot) => DropdownMenuItem(value: spot.id, child: Text(spot.name))),
                 ],
                 onChanged: (value) => setSheetState(() => chosenSpotId = value),

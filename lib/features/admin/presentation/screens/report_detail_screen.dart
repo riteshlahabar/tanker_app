@@ -155,9 +155,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                   ),
                 if (_usesSpot)
                   DropdownButton<int?>(
-                    hint: const Text('Spot'),
+                    hint: const Text('Filling Point'),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Any spot')),
+                      const DropdownMenuItem(value: null, child: Text('Any filling point')),
                       ..._spotOptions.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))),
                     ],
                     onChanged: (value) {

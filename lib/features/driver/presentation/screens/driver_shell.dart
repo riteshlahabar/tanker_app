@@ -30,9 +30,9 @@ class DriverShell extends StatelessWidget {
           body: DriverOrdersScreen(),
         ),
         NavTab(
-          label: 'Spots',
+          label: 'Filling',
           icon: Icons.water_drop_outlined,
-          title: 'Refill Spots',
+          title: 'Filling Points',
           body: DriverSpotsScreen(),
         ),
         NavTab(

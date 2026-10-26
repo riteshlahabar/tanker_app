@@ -50,7 +50,7 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
     final state = ref.watch(adminSpotsControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Refill Spots')),
+      appBar: AppBar(title: const Text('Filling Points')),
       body: Column(
         children: [
           Padding(
@@ -61,7 +61,7 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
                   child: TextField(
                     controller: _searchController,
                     decoration: const InputDecoration(
-                      hintText: 'Search spots',
+                      hintText: 'Search filling points',
                       prefixIcon: Icon(Icons.search),
                       isDense: true,
                       border: OutlineInputBorder(),
@@ -95,7 +95,7 @@ class _SpotListScreenState extends ConsumerState<SpotListScreen> {
                 : state.paginated.isEmpty
                     ? EmptyState(
                         icon: Icons.water_drop_outlined,
-                        title: 'No spots found',
+                        title: 'No filling points found',
                         message: state.error?.message,
                       )
                     : RefreshIndicator(
