@@ -41,10 +41,22 @@ class DriverOrderDetailScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    StatusChip(status: order.status, label: order.statusLabel),
-                    Text(
-                      order.amountLabel,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                    // Both Flexible: "Out for delivery" beside "Not priced
+                    // yet" overflowed a 400px phone, and both are real labels
+                    // — the amount reads as words, not a number, until a
+                    // tanker has been chosen.
+                    Flexible(
+                      child: StatusChip(status: order.status, label: order.statusLabel),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        order.amountLabel,
+                        textAlign: TextAlign.end,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                      ),
                     ),
                   ],
                 ),
@@ -58,6 +70,15 @@ class DriverOrderDetailScreen extends ConsumerWidget {
                   ),
                 if (order.tankerCount != null)
                   _detailRow(Icons.water_drop_outlined, order.tankerLabel),
+                // Where to fill, when the office has already said. Without
+                // this the driver had no way to see the point chosen for them,
+                // which is half of why the app kept asking for one. The
+                // "not chosen" line is only worth showing while the order is
+                // still open — on a finished delivery it reads as a fault.
+                if (order.spotName != null)
+                  _detailRow(Icons.local_drink_outlined, order.spotName!)
+                else if (order.isOpen)
+                  _detailRow(Icons.local_drink_outlined, 'Filling point not chosen yet'),
                 if (order.notes != null && order.notes!.isNotEmpty)
                   _detailRow(Icons.notes_outlined, order.notes!),
                 const SizedBox(height: 24),

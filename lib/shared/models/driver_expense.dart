@@ -116,3 +116,25 @@ class ExpenseSummary {
 
   static const empty = ExpenseSummary(today: ExpenseTotals.empty, month: ExpenseTotals.empty);
 }
+
+/// The admin screen's two figures, as `AdminExpenseSummaryController` returns
+/// them. The pair is the whole point, and the difference between them is what
+/// the screen has to make obvious:
+///
+/// * [filtered] totals **exactly the rows listed below it**, so narrowing the
+///   filters moves this figure and the list together. With nothing filtered it
+///   is all spending ever recorded.
+/// * [month] is this calendar month across every driver and **ignores the
+///   filters** — a fixed reference to read while narrowing, answering "what
+///   are we spending" rather than "what am I looking at".
+class AdminExpenseSummary {
+  const AdminExpenseSummary({required this.filtered, required this.month});
+
+  final ExpenseTotals filtered;
+  final ExpenseTotals month;
+
+  factory AdminExpenseSummary.fromJson(Map<String, dynamic> json) => AdminExpenseSummary(
+        filtered: ExpenseTotals.fromJson(JsonRead.asMap(json['filtered'])),
+        month: ExpenseTotals.fromJson(JsonRead.asMap(json['month'])),
+      );
+}

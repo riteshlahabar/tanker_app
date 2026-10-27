@@ -127,7 +127,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             const _ElsewhereCard(
               icon: Icons.person_outline,
               title: 'Monthly salary',
-              body: "On each driver, under Drivers. It is what the Driver Salary report reads.",
+              body: 'On each driver, under Drivers. It is what the Driver Salary report reads.',
             ),
 
             if (state.error != null) ...[

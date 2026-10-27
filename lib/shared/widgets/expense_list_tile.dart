@@ -22,11 +22,18 @@ class ExpenseListTile extends StatelessWidget {
     required this.expense,
     this.onTap,
     this.showDriver = false,
+    this.showDate = true,
   });
 
   final DriverExpense expense;
   final VoidCallback? onTap;
   final bool showDriver;
+
+  /// Off when the list already groups under a date heading, as the admin's
+  /// screen does — otherwise every row repeats the date written above it, and
+  /// the detail line reads "Fuel · 26 Oct 2026" under "Monday, 26 Oct 2026".
+  /// The driver's own list is ungrouped and keeps it.
+  final bool showDate;
 
   static final _dateFormat = DateFormat('d MMM yyyy');
 
@@ -95,10 +102,7 @@ class ExpenseListTile extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                showDriver
-                                    ? '${expense.category.label}  ·  '
-                                        '${_dateFormat.format(expense.expenseDate)}'
-                                    : _dateFormat.format(expense.expenseDate),
+                                _detailLine,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -155,6 +159,23 @@ class ExpenseListTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// The second line, which carries whatever the title does not.
+  ///
+  /// The title is the driver's name on the admin's list and the category on
+  /// the driver's own, and the date drops out when the list groups by it — so
+  /// between them exactly one of each is on the row, never twice and never
+  /// not at all.
+  String get _detailLine {
+    final parts = <String>[
+      if (showDriver) expense.category.label,
+      if (showDate) _dateFormat.format(expense.expenseDate),
+    ];
+
+    // Both suppressed only for a grouped list of one driver's own rows, where
+    // the category colour on the spine is the remaining signal.
+    return parts.isEmpty ? expense.category.label : parts.join('  ·  ');
   }
 
   IconData get _icon => switch (expense.category) {

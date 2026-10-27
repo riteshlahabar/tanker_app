@@ -21,15 +21,18 @@ class AdminExpenseRepositoryImpl implements AdminExpenseRepository {
   }) =>
       _client.list<DriverExpense>(
         '/admin/expenses',
-        query: {
-          'page': page,
-          'driver_id': ?filter.driverId,
-          if (filter.category != null) 'category': filter.category!.value,
-          if (filter.from != null) 'from': _dateFormat.format(filter.from!),
-          if (filter.to != null) 'to': _dateFormat.format(filter.to!),
-          if (filter.search != null && filter.search!.isNotEmpty) 'search': filter.search,
-        },
+        query: {'page': page, ...filter.toQuery()},
         parse: DriverExpense.fromJson,
+      );
+
+  @override
+  Future<ApiResult<AdminExpenseSummary>> summary({required AdminExpenseFilter filter}) =>
+      _client.get<AdminExpenseSummary>(
+        // The same `toQuery()` as the list above — that is what keeps the
+        // headline figure and the rows it sits over in agreement.
+        '/admin/expenses/summary',
+        query: filter.toQuery(),
+        parse: (data) => AdminExpenseSummary.fromJson(JsonRead.asMap(data)),
       );
 
   @override

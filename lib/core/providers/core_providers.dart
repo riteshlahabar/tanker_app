@@ -3,11 +3,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/auth/presentation/providers/session_controller.dart';
+import '../../features/auth/presentation/providers/session_state.dart';
 import '../../shared/models/delivery_slot.dart';
+import '../../shared/models/user_role.dart';
 import '../config/app_config.dart';
 import '../network/api_client.dart';
 import '../network/interceptors/auth_interceptor.dart';
 import '../network/session_expiry_bus.dart';
+import '../repositories/customer_lookup_repository.dart';
 import '../repositories/delivery_slot_repository.dart';
 import '../repositories/delivery_slot_repository_impl.dart';
 import '../storage/prefs.dart';
@@ -81,6 +85,26 @@ ApiClient apiClient(Ref ref) => ApiClient(ref.watch(dioProvider));
 @Riverpod(keepAlive: true)
 DeliverySlotRepository deliverySlotRepository(Ref ref) =>
     DeliverySlotRepositoryImpl(client: ref.watch(apiClientProvider));
+
+/// Customer search for whichever role is writing an order.
+///
+/// The endpoint is chosen **here, once**, from the signed-in role: an admin
+/// talks to `/admin/customers`, a driver to `/driver/customers`. A screen that
+/// picked its own path would 403 the moment the shared picker was reused by
+/// the other role, and the failure would read as a broken picker rather than a
+/// wrong URL. Anyone else — a customer, or a session still being restored —
+/// gets the driver path, which their token simply cannot use; no role but
+/// those two has a customer picker to show.
+@Riverpod(keepAlive: true)
+CustomerLookupRepository customerLookupRepository(Ref ref) {
+  final session = ref.watch(sessionControllerProvider);
+  final isAdmin = session is SessionSignedIn && session.user.role == UserRole.admin;
+
+  return CustomerLookupRepositoryImpl(
+    client: ref.watch(apiClientProvider),
+    path: isAdmin ? '/admin/customers' : '/driver/customers',
+  );
+}
 
 /// The windows the panel offers, for a form's dropdown.
 @riverpod

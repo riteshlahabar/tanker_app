@@ -38,6 +38,7 @@ class Order {
     this.customerName,
     this.driverName,
     this.tankerNumber,
+    this.spotId,
     this.spotName,
     this.tankerCount,
     this.deliverySlot,
@@ -68,7 +69,20 @@ class Order {
   final String? customerName;
   final String? driverName;
   final String? tankerNumber;
+
+  /// The filling point the admin chose when assigning, if they chose one.
+  ///
+  /// The **id** arrives on every order, list rows included; [spotName] only
+  /// when the server loaded the relation. That split is deliberate: the
+  /// driver's app has to know *whether* a point was already picked before it
+  /// decides whether to ask for one, and a name it may not have been sent is
+  /// no basis for that decision.
+  final int? spotId;
   final String? spotName;
+
+  /// An admin already named the filling point, so the driver can start
+  /// filling without being asked where.
+  bool get hasSpot => spotId != null;
 
   // Detail-only.
   final int? tankerCount;
@@ -137,6 +151,7 @@ class Order {
         customerName: JsonRead.asStringOrNull(json['customer_name']),
         driverName: JsonRead.asStringOrNull(json['driver_name']),
         tankerNumber: JsonRead.asStringOrNull(json['tanker_number']),
+        spotId: JsonRead.asIntOrNull(json['spot_id']),
         spotName: JsonRead.asStringOrNull(json['spot_name']),
         tankerCount: JsonRead.asIntOrNull(json['tanker_count']),
         deliverySlot: JsonRead.asStringOrNull(json['delivery_slot']),

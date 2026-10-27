@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers/customer_picker_controller.dart';
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/sheet_body.dart';

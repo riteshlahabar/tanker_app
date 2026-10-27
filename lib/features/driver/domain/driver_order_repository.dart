@@ -8,6 +8,20 @@ abstract interface class DriverOrderRepository {
 
   Future<ApiResult<Order>> show(int orderId);
 
+  /// A job the driver was given on the route. Placed **and assigned to them**
+  /// server-side in one step — there is no driver argument, because
+  /// `DriverPlaceOrderRequest` takes it from the token and would ignore one.
+  Future<ApiResult<Order>> place({
+    required int customerId,
+    required String deliveryAddress,
+    required DateTime deliveryDate,
+    int? deliverySlotId,
+    int? spotId,
+    int? tankerCount,
+    double? tankerRate,
+    String? notes,
+  });
+
   Future<ApiResult<Order>> startRefill(int orderId, {int? spotId, String? note});
 
   Future<ApiResult<Order>> markOutForDelivery(int orderId);

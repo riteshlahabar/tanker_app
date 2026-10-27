@@ -6,9 +6,15 @@ part of 'billing_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$customerBillingHash() => r'6b1f0c2d4a9e7538c0d1b4e82f6a35d7c9481ae0';
+String _$customerBillingHash() => r'ef8491fbe373d7bae36c967b19d438c42efa1fae';
 
 /// Every order the customer has, folded into months and days.
+///
+/// Built here rather than asked of the server because there is no billing
+/// endpoint — and there does not need to be one: the orders already carry the
+/// whole price rule (`tanker_rate × tanker_count = order_amount`), so the
+/// arithmetic the customer wants to check is the arithmetic already on the
+/// wire.
 ///
 /// Copied from [customerBilling].
 @ProviderFor(customerBilling)

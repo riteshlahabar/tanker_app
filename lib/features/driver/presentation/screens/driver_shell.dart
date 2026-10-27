@@ -5,6 +5,7 @@ import '../../../../shared/screens/account_profile_screen.dart';
 import '../../../../shared/widgets/role_shell.dart';
 import 'driver_expenses_screen.dart';
 import 'driver_home_screen.dart';
+import 'driver_new_order_screen.dart';
 import 'driver_orders_screen.dart';
 import 'driver_spots_screen.dart';
 
@@ -28,6 +29,15 @@ class DriverShell extends StatelessWidget {
           icon: Icons.local_shipping_outlined,
           title: 'My Deliveries',
           body: DriverOrdersScreen(),
+        ),
+        // Third, exactly where the admin shell puts its own New Order tab —
+        // the owner asked for the same thing a driver sees. A sixth icon costs
+        // nothing in the bar because AppBottomNav hides every label.
+        NavTab(
+          label: 'New Order',
+          icon: Icons.add_circle_outline,
+          title: 'Take an Order',
+          body: DriverNewOrderScreen(),
         ),
         NavTab(
           label: 'Filling',

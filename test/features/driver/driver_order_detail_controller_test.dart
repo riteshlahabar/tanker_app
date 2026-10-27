@@ -24,6 +24,19 @@ class _FakeRepository implements DriverOrderRepository {
       throw UnimplementedError();
 
   @override
+  Future<ApiResult<Order>> place({
+    required int customerId,
+    required String deliveryAddress,
+    required DateTime deliveryDate,
+    int? deliverySlotId,
+    int? spotId,
+    int? tankerCount,
+    double? tankerRate,
+    String? notes,
+  }) =>
+      throw UnimplementedError();
+
+  @override
   Future<ApiResult<Order>> startRefill(int orderId, {int? spotId, String? note}) =>
       throw UnimplementedError();
 

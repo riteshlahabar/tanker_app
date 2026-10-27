@@ -96,6 +96,53 @@ void main() {
     expect(appBarTitle('Home Title'), findsOneWidget);
   });
 
+  testWidgets('six tabs still fit the narrowest phone', (tester) async {
+    // The driver shell went to six tabs when New Order was added, and six is
+    // past Material's own recommendation of five. It fits because AppBottomNav
+    // hides every label (`showSelectedLabels: false`) and draws 25px icons in
+    // a fixed bar — so a tab is an icon in an equal-width slot, not a word.
+    //
+    // 320dp is the narrowest phone worth supporting; at six tabs that is
+    // about 53dp a slot. If a label is ever switched back on, this fails.
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    const six = [
+      NavTab(label: 'HomeTab', icon: Icons.home, title: 'T1', body: Text('b1')),
+      NavTab(label: 'OrdersTab', icon: Icons.list, title: 'T2', body: Text('b2')),
+      NavTab(label: 'NewTab', icon: Icons.add_circle_outline, title: 'T3', body: Text('b3')),
+      NavTab(label: 'FillTab', icon: Icons.water_drop_outlined, title: 'T4', body: Text('b4')),
+      NavTab(label: 'SpendTab', icon: Icons.receipt_long_outlined, title: 'T5', body: Text('b5')),
+      NavTab(label: 'MeTab', icon: Icons.person_outline, title: 'T6', body: Text('b6')),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppThemeData.lightTheme,
+          home: const RoleShell(tabs: six),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // An overflow would have been thrown during layout, not at the assertion.
+    expect(tester.takeException(), isNull);
+    expect(find.byType(AppBottomNav), findsOneWidget);
+
+    // And every one of the six is reachable, not just drawn.
+    await tester.tap(find.byIcon(Icons.add_circle_outline));
+    await tester.pumpAndSettle();
+
+    expect(appBarTitle('T3'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.person_outline));
+    await tester.pumpAndSettle();
+
+    expect(appBarTitle('T6'), findsOneWidget);
+  });
+
   testWidgets('no drawer unless the shell is given one', (tester) async {
     await pumpShell(tester);
     expect(

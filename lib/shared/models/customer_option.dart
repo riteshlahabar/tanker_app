@@ -1,7 +1,13 @@
-import '../../../shared/utils/json_read.dart';
+import '../utils/json_read.dart';
 
-/// A customer as the New Order picker needs them — enough to pre-fill the
-/// order form once one is chosen.
+/// A customer as an order form's picker needs them — enough to choose one and
+/// pre-fill the delivery address.
+///
+/// In `shared/` because two roles now read this shape: the admin's New Order
+/// screen from `/api/admin/customers`, and the driver's from
+/// `/api/driver/customers`. The driver's endpoint answers with
+/// `CustomerLookupResource`, which sends exactly these four fields — the
+/// admin's sends more, and this model has always ignored the rest.
 class CustomerOption {
   const CustomerOption({
     required this.id,

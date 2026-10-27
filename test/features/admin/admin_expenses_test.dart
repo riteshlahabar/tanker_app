@@ -58,6 +58,79 @@ void main() {
       expect(filter.copyWith(clearRange: true).hasRange, isFalse);
       expect(filter.copyWith(clearRange: true).driverId, 7);
     });
+
+    test('clearing the driver drops the name with the id', () {
+      // The name is only ever shown *because* of the id. Leaving it behind
+      // would put "Ramesh Patil" on a chip that is no longer filtering, and
+      // on the totals card's line saying whose figure is on screen.
+      const filter = AdminExpenseFilter(driverId: 7, driverName: 'Ramesh Patil');
+
+      expect(filter.copyWith(clearDriver: true).driverName, isNull);
+    });
+
+    test('toQuery is what both the list and the summary send', () {
+      // The screen shows a total above the rows it lists, so the two requests
+      // must carry the same filters — they share this one builder for that
+      // reason. A filter that reached only one of them would print a figure
+      // that disagrees with the list under it.
+      final filter = AdminExpenseFilter(
+        driverId: 7,
+        driverName: 'Ramesh Patil',
+        category: ExpenseCategory.fuel,
+        from: DateTime(2026, 10, 1),
+        to: DateTime(2026, 10, 31),
+        search: 'diesel',
+      );
+
+      expect(filter.toQuery(), {
+        'driver_id': 7,
+        'category': 'fuel',
+        'from': '2026-10-01',
+        'to': '2026-10-31',
+        'search': 'diesel',
+      });
+
+      // The name is display only — sending it would 422 on a validated query.
+      expect(filter.toQuery().containsKey('driver_name'), isFalse);
+    });
+
+    test('toQuery leaves out what is not set rather than sending blanks', () {
+      expect(const AdminExpenseFilter().toQuery(), isEmpty);
+      // An empty search box is not a search for "".
+      expect(const AdminExpenseFilter(search: '').toQuery(), isEmpty);
+    });
+  });
+
+  group('AdminExpenseSummary', () {
+    test('carries both figures, and every category even at zero', () {
+      final summary = AdminExpenseSummary.fromJson(const {
+        'filtered': {'entries': 2, 'total': 1500, 'fuel': 1200, 'toll': 300},
+        'month': {'entries': 3, 'total': 2400, 'fuel': 2100, 'toll': 300},
+      });
+
+      expect(summary.filtered.total, 1500);
+      expect(summary.filtered.entries, 2);
+      expect(summary.filtered.of(ExpenseCategory.fuel), 1200);
+      // Absent from the payload above, present as 0 here, so the header never
+      // changes shape with the data.
+      expect(summary.filtered.of(ExpenseCategory.maintenance), 0);
+
+      // `month` ignores the filters on purpose — it is the fixed reference.
+      expect(summary.month.total, 2400);
+    });
+
+    test('integral money arrives as an int and still reads as a double', () {
+      // CLAUDE.md rule 7: PHP sends 1500.0 as 1500, and `as double` on an int
+      // throws. JsonRead is what stops that.
+      final summary = AdminExpenseSummary.fromJson(const {
+        'filtered': {'entries': 1, 'total': 1500, 'fuel': 1500},
+        'month': {'entries': 1, 'total': 1500.5, 'fuel': 1500.5},
+      });
+
+      expect(summary.filtered.total, isA<double>());
+      expect(summary.filtered.total, 1500.0);
+      expect(summary.month.total, 1500.5);
+    });
   });
 
   group('the admin list row', () {

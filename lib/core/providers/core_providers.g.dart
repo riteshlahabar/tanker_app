@@ -120,6 +120,35 @@ final deliverySlotRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef DeliverySlotRepositoryRef = ProviderRef<DeliverySlotRepository>;
+String _$customerLookupRepositoryHash() =>
+    r'8a6afe4a595d8771ce8047709b11a4c353abb061';
+
+/// Customer search for whichever role is writing an order.
+///
+/// The endpoint is chosen **here, once**, from the signed-in role: an admin
+/// talks to `/admin/customers`, a driver to `/driver/customers`. A screen that
+/// picked its own path would 403 the moment the shared picker was reused by
+/// the other role, and the failure would read as a broken picker rather than a
+/// wrong URL. Anyone else — a customer, or a session still being restored —
+/// gets the driver path, which their token simply cannot use; no role but
+/// those two has a customer picker to show.
+///
+/// Copied from [customerLookupRepository].
+@ProviderFor(customerLookupRepository)
+final customerLookupRepositoryProvider =
+    Provider<CustomerLookupRepository>.internal(
+      customerLookupRepository,
+      name: r'customerLookupRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$customerLookupRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CustomerLookupRepositoryRef = ProviderRef<CustomerLookupRepository>;
 String _$deliverySlotOptionsHash() =>
     r'fc9fac7dcb331e374e031eacd552008eaf44ddd3';
 

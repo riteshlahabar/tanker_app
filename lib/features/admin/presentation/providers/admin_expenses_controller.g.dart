@@ -7,7 +7,7 @@ part of 'admin_expenses_controller.dart';
 // **************************************************************************
 
 String _$adminExpensesControllerHash() =>
-    r'ce93d6373012cf0cc1a2ab642779a384947708f8';
+    r'0114736f27bfff7e32cb257eb69c9908c06325a6';
 
 /// See also [AdminExpensesController].
 @ProviderFor(AdminExpensesController)

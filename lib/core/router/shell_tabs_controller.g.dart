@@ -6,7 +6,7 @@ part of 'shell_tabs_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$shellTabsHash() => r'14059c604de9288dfe0a9677fef1ce23c0103968';
+String _$shellTabsHash() => r'3af5a1bd7c83e90cb4b47a0cbc7b2c645a4a0880';
 
 /// See also [ShellTabs].
 @ProviderFor(ShellTabs)

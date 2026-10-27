@@ -4,22 +4,22 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/network/api_result.dart';
 import '../../../../core/providers/core_providers.dart';
-import '../../../../core/theme/colors.dart';
 import '../../../../shared/models/spot.dart';
 import '../../../../shared/widgets/app_dropdown_field.dart';
 import '../../../../shared/widgets/app_picker_field.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/form_note.dart';
 import '../../../../shared/widgets/form_section_heading.dart';
+import '../../../../shared/widgets/order_total_card.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/tanker_count_field.dart';
 import '../../../driver/presentation/providers/driver_providers.dart' as driver;
-import '../../domain/customer_option.dart';
+import '../../../../shared/models/customer_option.dart';
 import '../../domain/driver_option.dart';
 import '../providers/admin_orders_controller.dart';
 import '../providers/new_order_controller.dart';
 import '../widgets/driver_picker_sheet.dart';
-import '../widgets/new_order_customer_picker.dart';
+import '../../../../shared/widgets/customer_picker_field.dart';
 import 'admin_order_detail_screen.dart';
 
 /// "New Order" tab — an admin writing down a phone order.
@@ -196,7 +196,7 @@ class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const FormSectionHeading('Customer'),
-            NewOrderCustomerPicker(chosen: _customer, onChosen: _onCustomerChosen),
+            CustomerPickerField(chosen: _customer, onChosen: _onCustomerChosen),
 
             const FormSectionHeading('Delivery'),
             AppPickerField(
@@ -270,7 +270,7 @@ class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
               onChanged: (count) => setState(() => _tankers = count),
             ),
             const SizedBox(height: 12),
-            _TotalCard(rate: _rateValue, tankers: _tankers, total: _total),
+            OrderTotalCard(rate: _rateValue, tankers: _tankers, total: _total),
 
             const FormSectionHeading('Filling point'),
             AppDropdownField<int>(
@@ -315,59 +315,3 @@ class _NewOrderScreenState extends ConsumerState<NewOrderScreen> {
   }
 }
 
-/// The total, shown as a result rather than a field — it is not something the
-/// admin can type any more, it is what the two numbers above come to.
-class _TotalCard extends StatelessWidget {
-  const _TotalCard({required this.rate, required this.tankers, required this.total});
-
-  final double rate;
-  final int tankers;
-  final double total;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: isDark ? Theme.of(context).cardColor : appetitAppContainerColor,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'TOTAL AMOUNT',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: appTextColorSecondary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$tankers × ₹ ${rate.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 12, color: appTextColorSecondary),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            '₹ ${total.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : appColorPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

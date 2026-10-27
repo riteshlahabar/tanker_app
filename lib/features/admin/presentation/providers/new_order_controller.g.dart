@@ -7,11 +7,13 @@ part of 'new_order_controller.dart';
 // **************************************************************************
 
 String _$newOrderControllerHash() =>
-    r'1f88c6ec2923815877fa97763314c8a52e50072c';
+    r'683339bad17b41239506506afff9c4791976ba70';
 
-/// Backs the admin's "New Order" tab — a phone order typed in by hand, so
-/// (unlike the customer's own form) the amount is a field here, not
-/// server-computed.
+/// Backs the admin's "New Order" tab — a phone order written down by hand.
+///
+/// The amount is **not** a field: the admin picks the driver, the rate of the
+/// tanker that driver holds fills itself in, and `rate × tankers` is the
+/// total. Only a rate the admin types over becomes an override.
 ///
 /// Copied from [NewOrderController].
 @ProviderFor(NewOrderController)

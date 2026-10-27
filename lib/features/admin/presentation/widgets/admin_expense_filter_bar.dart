@@ -2,13 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/colors.dart';
 import '../../../../shared/models/driver_expense.dart';
 import '../../domain/admin_expense_repository.dart';
 import '../providers/admin_expenses_controller.dart';
-import '../providers/admin_picker_controllers.dart';
+import 'expense_driver_picker_sheet.dart';
 
 /// Driver / category / date-range / search, mirroring what the web panel's
 /// DataTable offers so the two screens answer the same questions.
+///
+/// The chips name their value rather than their state: the driver chip reads
+/// **"Ramesh Patil"**, not "Driver chosen", and the date chip the actual range
+/// — a chip that only says a filter is *on* makes the admin reopen the picker
+/// to find out what they are looking at, and the total above the list becomes
+/// unreadable with it.
+///
+/// The row scrolls horizontally because five categories plus driver and date
+/// never fit a phone's width; the leading search field is the app's own
+/// borderless cream input rather than Material's outlined box, which was the
+/// one grey-outlined field left on a page of cream ones.
 class AdminExpenseFilterBar extends ConsumerStatefulWidget {
   const AdminExpenseFilterBar({super.key, required this.filter});
 
@@ -21,12 +33,25 @@ class AdminExpenseFilterBar extends ConsumerStatefulWidget {
 class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
   final _searchController = TextEditingController();
 
-  static final _dateFormat = DateFormat('d MMM');
+  static final _dayMonth = DateFormat('d MMM');
 
   @override
   void initState() {
     super.initState();
     _searchController.text = widget.filter.search ?? '';
+  }
+
+  @override
+  void didUpdateWidget(AdminExpenseFilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Keeps the field in step when the filter is cleared from elsewhere — the
+    // Clear chip, or the empty state's own button.
+    final search = widget.filter.search ?? '';
+
+    if (search != (oldWidget.filter.search ?? '') && search != _searchController.text) {
+      _searchController.text = search;
+    }
   }
 
   @override
@@ -54,144 +79,215 @@ class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
   }
 
   Future<void> _pickDriver() async {
-    final picked = await showModalBottomSheet<int>(
+    final picked = await showModalBottomSheet<ExpenseDriverChoice>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => const _DriverPickerSheet(),
+      builder: (_) => const ExpenseDriverPickerSheet(),
     );
 
     if (picked == null) return;
 
-    // -1 is the sheet's "any driver" row; a real id is never negative.
     _apply(
-      picked < 0
+      picked.isAny
           ? widget.filter.copyWith(clearDriver: true)
-          : widget.filter.copyWith(driverId: picked),
+          : widget.filter.copyWith(driverId: picked.id, driverName: picked.name),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final filter = widget.filter;
+    final isFiltered = ref.watch(adminExpensesControllerProvider).isFiltered;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: Column(
-        children: [
-          TextField(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+          child: _SearchField(
             controller: _searchController,
-            decoration: const InputDecoration(
-              hintText: 'Search driver or notes',
-              prefixIcon: Icon(Icons.search),
-              isDense: true,
-              border: OutlineInputBorder(),
-            ),
             onSubmitted: (value) => _apply(filter.copyWith(search: value)),
           ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                FilterChip(
-                  label: Text(filter.driverId == null ? 'Any driver' : 'Driver chosen'),
-                  selected: filter.driverId != null,
-                  onSelected: (_) => _pickDriver(),
+        ),
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              _FilterChip(
+                label: filter.driverName ?? 'All drivers',
+                icon: Icons.person_outline,
+                selected: filter.driverId != null,
+                onTap: _pickDriver,
+              ),
+              _FilterChip(
+                label: filter.hasRange
+                    ? '${_dayMonth.format(filter.from!)} – ${_dayMonth.format(filter.to!)}'
+                    : 'All time',
+                icon: Icons.date_range_outlined,
+                selected: filter.hasRange,
+                onTap: _pickRange,
+              ),
+              // A thin rule, because what follows is a different kind of
+              // control: these toggle, the two above open a picker.
+              Container(
+                width: 1,
+                height: 22,
+                margin: const EdgeInsets.only(right: 8),
+                color: appTextColorSecondary.withValues(alpha: 0.2),
+              ),
+              for (final category in ExpenseCategory.values)
+                _FilterChip(
+                  label: category.label,
+                  colour: category.color,
+                  selected: filter.category == category,
+                  onTap: () => _apply(
+                    filter.category == category
+                        ? filter.copyWith(clearCategory: true)
+                        : filter.copyWith(category: category),
+                  ),
                 ),
-                const SizedBox(width: 8),
-                for (final category in ExpenseCategory.values) ...[
-                  FilterChip(
-                    label: Text(category.label),
-                    selected: filter.category == category,
-                    onSelected: (selected) => _apply(
-                      selected
-                          ? filter.copyWith(category: category)
-                          : filter.copyWith(clearCategory: true),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                FilterChip(
-                  label: Text(
-                    filter.hasRange
-                        ? '${_dateFormat.format(filter.from!)} – ${_dateFormat.format(filter.to!)}'
-                        : 'Any date',
-                  ),
-                  selected: filter.hasRange,
-                  onSelected: (_) => _pickRange(),
+              if (isFiltered)
+                _FilterChip(
+                  label: 'Clear',
+                  icon: Icons.close,
+                  selected: false,
+                  onTap: () {
+                    _searchController.clear();
+                    _apply(const AdminExpenseFilter());
+                  },
                 ),
-                const SizedBox(width: 8),
-                if (ref.watch(adminExpensesControllerProvider).isFiltered)
-                  ActionChip(
-                    avatar: const Icon(Icons.clear, size: 16),
-                    label: const Text('Clear'),
-                    onPressed: () {
-                      _searchController.clear();
-                      _apply(const AdminExpenseFilter());
-                    },
-                  ),
-              ],
-            ),
+            ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The app's borderless cream input, with the search affordances this bar
+/// needs: submit on done, and a clear button once there is something to
+/// clear. [AppTextField] is not used because it takes a label above the
+/// field, which a single-line search row does not want.
+class _SearchField extends StatefulWidget {
+  const _SearchField({required this.controller, required this.onSubmitted});
+
+  final TextEditingController controller;
+  final ValueChanged<String> onSubmitted;
+
+  @override
+  State<_SearchField> createState() => _SearchFieldState();
+}
+
+class _SearchFieldState extends State<_SearchField> {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: TextField(
+        controller: widget.controller,
+        textInputAction: TextInputAction.search,
+        onSubmitted: widget.onSubmitted,
+        // Redraws so the clear button appears and disappears with the text.
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: 'Search a driver or a note',
+          hintStyle: const TextStyle(color: Colors.grey, fontSize: 13.5),
+          prefixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
+          suffixIcon: widget.controller.text.isEmpty
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+                  onPressed: () {
+                    widget.controller.clear();
+                    widget.onSubmitted('');
+                  },
+                ),
+          border: InputBorder.none,
+          filled: true,
+          fillColor: isDark
+              ? Theme.of(context).cardColor
+              : appetitAppContainerColor.withValues(alpha: 0.6),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+        ),
       ),
     );
   }
 }
 
-/// Reuses the Assign sheet's driver search, so there is one list of drivers in
-/// the app rather than one per screen.
-class _DriverPickerSheet extends ConsumerWidget {
-  const _DriverPickerSheet();
+/// One filter chip, in the design's own language rather than Material's.
+///
+/// Selected takes the category's own colour where there is one, so a chosen
+/// Fuel chip and the Fuel spine on the rows below it are the same blue — the
+/// filter and what it filtered read as one thing.
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.icon,
+    this.colour,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final IconData? icon;
+  final Color? colour;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(driverPickerControllerProvider);
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = colour ?? appColorPrimary;
+    final foreground = selected
+        ? (isDark ? Colors.white : accent)
+        : (isDark ? Colors.white70 : appTextColorSecondary);
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Search drivers',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (value) =>
-                    ref.read(driverPickerControllerProvider.notifier).search(value),
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: selected
+            ? accent.withValues(alpha: isDark ? 0.34 : 0.14)
+            : (isDark ? Theme.of(context).cardColor : appetitAppContainerColor.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: selected ? accent.withValues(alpha: 0.55) : Colors.transparent,
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.people_outline),
-              title: const Text('Any driver'),
-              onTap: () => Navigator.pop(context, -1),
-            ),
-            const Divider(height: 1),
-            if (state.loading)
-              const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())
-            else
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: state.options.length,
-                  itemBuilder: (context, index) {
-                    final driver = state.options[index];
-
-                    return ListTile(
-                      title: Text(driver.fullName),
-                      subtitle: Text(driver.mobile ?? ''),
-                      onTap: () => Navigator.pop(context, driver.id),
-                    );
-                  },
+            child: Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 15, color: foreground),
+                  const SizedBox(width: 5),
+                ] else if (colour != null) ...[
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: foreground,
+                  ),
                 ),
-              ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

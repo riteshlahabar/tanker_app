@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/providers/core_providers.dart';
 import '../../../../shared/widgets/app_picker_field.dart';
+import '../../../../shared/widgets/customer_picker_field.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/form_note.dart';
 import '../../../../shared/widgets/form_section_heading.dart';
@@ -11,9 +12,8 @@ import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/shell_tab_bar.dart';
 import '../../../../shared/widgets/tanker_count_field.dart';
 import '../../domain/admin_schedule.dart';
-import '../../domain/customer_option.dart';
+import '../../../../shared/models/customer_option.dart';
 import '../../domain/driver_option.dart';
-import '../providers/admin_picker_controllers.dart';
 import '../providers/admin_providers.dart';
 import '../providers/admin_schedule_form_controller.dart';
 import '../providers/admin_schedules_controller.dart';
@@ -291,7 +291,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
                   ),
                 )
               else
-                _CustomerPickerField(
+                CustomerPickerField(
                   chosen: _customer,
                   onChosen: _onCustomerChosen,
                 ),
@@ -454,56 +454,6 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
         ),
       ),
       bottomNavigationBar: const ShellTabBar(),
-    );
-  }
-}
-
-class _CustomerPickerField extends ConsumerWidget {
-  const _CustomerPickerField({required this.chosen, required this.onChosen});
-
-  final CustomerOption? chosen;
-  final ValueChanged<CustomerOption> onChosen;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(customerPickerControllerProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Customer',
-            hintText: 'Search by name or mobile',
-            border: const OutlineInputBorder(),
-            suffixIcon: chosen == null ? null : const Icon(Icons.check_circle, color: Colors.green),
-          ),
-          onChanged: (value) => ref.read(customerPickerControllerProvider.notifier).search(value),
-        ),
-        if (state.loading) const LinearProgressIndicator(),
-        if (state.options.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 4),
-            constraints: const BoxConstraints(maxHeight: 220),
-            decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300)),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                for (final customer in state.options)
-                  ListTile(
-                    title: Text(customer.fullName),
-                    subtitle: Text(customer.mobile ?? ''),
-                    onTap: () => onChosen(customer),
-                  ),
-              ],
-            ),
-          ),
-        if (chosen != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text('Selected: ${chosen!.fullName}', style: const TextStyle(color: Colors.grey)),
-          ),
-      ],
     );
   }
 }

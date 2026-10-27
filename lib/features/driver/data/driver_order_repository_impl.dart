@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_result.dart';
 import '../../../shared/models/order.dart';
@@ -10,6 +12,9 @@ class DriverOrderRepositoryImpl implements DriverOrderRepository {
 
   final ApiClient _client;
 
+  /// What the API's `date` rule accepts.
+  static final _dateFormat = DateFormat('yyyy-MM-dd');
+
   @override
   Future<ApiResult<Paginated<Order>>> list({required bool openOnly, int page = 1}) =>
       _client.list<Order>(
@@ -21,6 +26,34 @@ class DriverOrderRepositoryImpl implements DriverOrderRepository {
   @override
   Future<ApiResult<Order>> show(int orderId) => _client.get<Order>(
         '/driver/orders/$orderId',
+        parse: (data) => Order.fromJson(JsonRead.asMap(data)),
+      );
+
+  @override
+  Future<ApiResult<Order>> place({
+    required int customerId,
+    required String deliveryAddress,
+    required DateTime deliveryDate,
+    int? deliverySlotId,
+    int? spotId,
+    int? tankerCount,
+    double? tankerRate,
+    String? notes,
+  }) =>
+      _client.post<Order>(
+        '/driver/orders',
+        body: {
+          'customer_id': customerId,
+          'delivery_address': deliveryAddress,
+          'delivery_date': _dateFormat.format(deliveryDate),
+          // No `driver_id`: the server takes it from the token, and sending one
+          // would be both ignored and misleading to read here.
+          'delivery_slot_id': ?deliverySlotId,
+          'spot_id': ?spotId,
+          'tanker_count': ?tankerCount,
+          'tanker_rate': ?tankerRate,
+          if (notes != null && notes.isNotEmpty) 'notes': notes,
+        },
         parse: (data) => Order.fromJson(JsonRead.asMap(data)),
       );
 
