@@ -44,10 +44,15 @@ class AdminTankersState {
 @riverpod
 class AdminTankersController extends _$AdminTankersController {
   @override
-  AdminTankersState build() {
+  /// [initialStatus] opens the list already narrowed — the dashboard's
+  /// "Active" counters do, so the list matches the figure that was tapped.
+  /// It is a family argument rather than something set after mounting:
+  /// Riverpod forbids modifying a provider from a widget lifecycle, and
+  /// seeding it later races the opening load.
+  AdminTankersState build({bool? initialStatus}) {
     FirstLoad.after(ref, refresh);
 
-    return const AdminTankersState();
+    return AdminTankersState(filter: EntityListFilter(status: initialStatus));
   }
 
   Future<void> setFilter(EntityListFilter filter) async {

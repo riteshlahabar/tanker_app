@@ -11,7 +11,12 @@ import '../widgets/tanker_list_tile.dart';
 import 'tanker_form_screen.dart';
 
 class TankerListScreen extends ConsumerStatefulWidget {
-  const TankerListScreen({super.key});
+  const TankerListScreen({super.key, this.initialStatus});
+
+  /// Set by the dashboard's "Active tankers" tile, so the list the owner lands
+  /// on matches the number they tapped. Null from the drawer, which lists
+  /// everyone.
+  final bool? initialStatus;
 
   @override
   ConsumerState<TankerListScreen> createState() => _TankerListScreenState();
@@ -20,13 +25,17 @@ class TankerListScreen extends ConsumerStatefulWidget {
 class _TankerListScreenState extends ConsumerState<TankerListScreen> {
   final _scrollController = ScrollController();
 
+  /// Keyed by the opening filter — see the controller's own note.
+  AdminTankersControllerProvider get _controller =>
+      adminTankersControllerProvider(initialStatus: widget.initialStatus);
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >
           _scrollController.position.maxScrollExtent - 200) {
-        ref.read(adminTankersControllerProvider.notifier).loadMore();
+        ref.read(_controller.notifier).loadMore();
       }
     });
   }
@@ -42,13 +51,13 @@ class _TankerListScreenState extends ConsumerState<TankerListScreen> {
       MaterialPageRoute(builder: (_) => TankerFormScreen(existing: existing)),
     );
 
-    await ref.read(adminTankersControllerProvider.notifier).refresh();
+    await ref.read(_controller.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(adminTankersControllerProvider);
-    final notifier = ref.read(adminTankersControllerProvider.notifier);
+    final state = ref.watch(_controller);
+    final notifier = ref.read(_controller.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tankers')),

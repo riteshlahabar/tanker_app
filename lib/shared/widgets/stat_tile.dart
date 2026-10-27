@@ -26,6 +26,7 @@ class StatTile extends StatelessWidget {
     required this.value,
     this.color,
     this.icon,
+    this.onTap,
   });
 
   final String label;
@@ -36,20 +37,27 @@ class StatTile extends StatelessWidget {
   final Color? color;
   final IconData? icon;
 
+  /// Optional: where the figure comes from. A dashboard counter is a question
+  /// — "nine orders today, which nine?" — so the tile answers it by opening
+  /// the list it was counted from. A report total has no such list behind it
+  /// and passes nothing, staying a plain card.
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final accent = color ?? appColorPrimary;
+    const radius = 15.0;
+    const padding = EdgeInsets.symmetric(horizontal: 14, vertical: 11);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: BoxDecoration(
-        color: color == null
-            ? appetitAppContainerColor.withValues(alpha: 0.5)
-            : color!.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(15),
-        border: color == null ? null : Border.all(color: color!.withValues(alpha: 0.18)),
-      ),
-      child: Column(
+    final decoration = BoxDecoration(
+      color: color == null
+          ? appetitAppContainerColor.withValues(alpha: 0.5)
+          : color!.withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(radius),
+      border: color == null ? null : Border.all(color: color!.withValues(alpha: 0.18)),
+    );
+
+    final content = Column(
         // min, not max: in a Wrap (the report screen) the height is unbounded,
         // and a max column there would try to be infinitely tall.
         mainAxisSize: MainAxisSize.min,
@@ -95,6 +103,26 @@ class StatTile extends StatelessWidget {
             ),
           ),
         ],
+      );
+
+    if (onTap == null) {
+      return Container(padding: padding, decoration: decoration, child: content);
+    }
+
+    // `Ink` rather than a decorated `Container`: a Container's own colour sits
+    // above the Material the splash is painted on, so the tap feedback would
+    // be invisible — the same trap the customer picker's ListTile hit.
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(radius),
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        decoration: decoration,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(radius),
+          child: Padding(padding: padding, child: content),
+        ),
       ),
     );
   }

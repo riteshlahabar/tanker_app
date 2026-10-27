@@ -38,13 +38,22 @@ class AdminReportDetailState {
 /// Backs one report's detail screen — the server defaults the date range to
 /// this month when the filter leaves `from`/`to` null, so the first load
 /// needs no client-side default.
+///
+/// **A screen opening the report at a particular range passes it here**, as
+/// part of the provider's identity, rather than setting it afterwards: the
+/// dashboard's Revenue tile wants today. Riverpod forbids modifying a
+/// provider from `initState`, and seeding it once the opening load has
+/// started races two requests — so the range has to be known at `build()`,
+/// and then the one request `FirstLoad` fires already carries it.
 @riverpod
 class AdminReportDetailController extends _$AdminReportDetailController {
   @override
-  AdminReportDetailState build(String reportKey) {
+  AdminReportDetailState build(String reportKey, {DateTime? initialFrom, DateTime? initialTo}) {
     FirstLoad.after(ref, refresh);
 
-    return const AdminReportDetailState();
+    return AdminReportDetailState(
+      filter: AdminReportFilter(from: initialFrom, to: initialTo),
+    );
   }
 
   Future<void> setFilter(AdminReportFilter filter) async {

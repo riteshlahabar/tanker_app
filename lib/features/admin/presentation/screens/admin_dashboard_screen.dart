@@ -3,11 +3,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/router/shell_tabs_controller.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../shared/models/order_status.dart';
 import '../../../../shared/widgets/order_list_tile.dart';
 import '../../../../shared/widgets/stat_tile.dart';
 import '../../domain/admin_dashboard.dart';
+import '../../domain/admin_order_filter.dart';
+import '../../domain/admin_report_filter.dart';
 import '../providers/admin_dashboard_controller.dart';
+import '../providers/admin_orders_controller.dart';
+import '../providers/admin_reports_controller.dart';
 import 'admin_order_detail_screen.dart';
+import 'customer_list_screen.dart';
+import 'driver_list_screen.dart';
+import 'report_detail_screen.dart';
+import 'schedule_list_screen.dart';
+import 'tanker_list_screen.dart';
+
+/// The report behind "Revenue today" — the server's key for the Daily
+/// Delivery report, which is where the day's money is broken down.
+const _revenueReportKey = 'daily-delivery';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -59,13 +73,71 @@ class AdminDashboardScreen extends ConsumerWidget {
 
 /// The nine figures, grouped under headings — today's trade first, because it
 /// is what the owner opens the app to check.
-class _Counters extends StatelessWidget {
+///
+/// **Every counter is a doorway**: a figure invites the question "which
+/// ones?", and the tile answers it by opening the list it was counted from,
+/// pre-filtered — the "Active" tiles on their own `status: true` lists, so
+/// what the owner lands on adds up to the number they tapped.
+class _Counters extends ConsumerWidget {
   const _Counters({required this.dashboard});
 
   final AdminDashboard dashboard;
 
+  /// Moves the shell to the Orders tab with the tile's own filter applied,
+  /// rather than pushing a second copy of the list — see
+  /// `ShellTabs.selectLabel`. Whatever the Orders tab was filtered by is
+  /// replaced, which is the point: the owner asked for *these* orders.
+  void _showOrders(WidgetRef ref, {OrderStatus? status, bool today = false}) {
+    final now = DateTime.now();
+    final day = DateTime(now.year, now.month, now.day);
+
+    ref.read(adminOrdersControllerProvider.notifier).setFilter(
+          AdminOrderFilter(status: status, from: today ? day : null, to: today ? day : null),
+        );
+    ref.read(shellTabsProvider.notifier).selectLabel('Orders');
+  }
+
+  void _push(BuildContext context, Widget screen) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
+
+  /// Revenue today opens the **Daily Delivery report for today** — the figure
+  /// is a total, and a report is where a total is explained; the delivered
+  /// orders behind it are one tap further on.
+  ///
+  /// The report's definition comes from the server's own menu rather than
+  /// being written out here, so a renamed or re-filtered report still opens
+  /// correctly. If that menu has not arrived yet the tile falls back to the
+  /// Reports tab: the owner lands one tap away, never on nothing.
+  void _showRevenueReport(BuildContext context, WidgetRef ref) {
+    final reports = ref.read(adminReportsControllerProvider).reports;
+    final definition = reports.where((report) => report.key == _revenueReportKey).firstOrNull;
+
+    if (definition == null) {
+      ref.read(shellTabsProvider.notifier).selectLabel('Reports');
+
+      return;
+    }
+
+    final now = DateTime.now();
+    final day = DateTime(now.year, now.month, now.day);
+
+    _push(
+      context,
+      ReportDetailScreen(
+        definition: definition,
+        initialFilter: AdminReportFilter(from: day, to: day),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watched rather than read at tap time: the Revenue tile opens a report
+    // by the server's own menu, and that menu is otherwise loaded by the
+    // Reports tab. A tile that quietly fell back to the Reports list because
+    // another tab had not been opened yet would be a mystery to the owner.
+    ref.watch(adminReportsControllerProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -78,6 +150,7 @@ class _Counters extends StatelessWidget {
               value: '${dashboard.ordersToday}',
               color: appColorPrimary,
               icon: Icons.receipt_outlined,
+              onTap: () => _showOrders(ref, today: true),
             ),
             StatTile(
               label: 'Pending',
@@ -86,18 +159,26 @@ class _Counters extends StatelessWidget {
               // order row read as the same thing.
               color: statusPendingColor,
               icon: Icons.hourglass_empty,
+              // Deliberately no date: a pending order from yesterday is still
+              // waiting, and the owner tapping this wants the queue, not an
+              // extract of it.
+              onTap: () => _showOrders(ref, status: OrderStatus.pending),
             ),
             StatTile(
               label: 'Delivered today',
               value: '${dashboard.deliveredToday}',
               color: statusDeliveredColor,
               icon: Icons.check_circle_outline,
+              onTap: () => _showOrders(ref, status: OrderStatus.delivered, today: true),
             ),
             StatTile(
               label: 'Tankers delivered',
               value: '${dashboard.tankersDeliveredToday}',
               color: statusDeliveredColor,
               icon: Icons.water_drop_outlined,
+              // Loads, not orders — so this opens the orders those loads were
+              // carried on, the same list the tile beside it opens.
+              onTap: () => _showOrders(ref, status: OrderStatus.delivered, today: true),
             ),
           ],
         ),
@@ -107,6 +188,7 @@ class _Counters extends StatelessWidget {
           value: '₹ ${dashboard.revenueToday.toStringAsFixed(0)}',
           color: appetitBrownColor,
           icon: Icons.currency_rupee,
+          onTap: () => _showRevenueReport(context, ref),
         ),
         const SizedBox(height: 20),
         const _SectionHeading('Coming up'),
@@ -118,12 +200,19 @@ class _Counters extends StatelessWidget {
               value: '${dashboard.scheduledTomorrow}',
               color: statusRefillingColor,
               icon: Icons.event_outlined,
+              // Tomorrow's orders do not exist yet — the generator writes them
+              // overnight — so this opens the standing orders they come from,
+              // not an empty day of the Orders list.
+              onTap: () => _push(context, const ScheduleListScreen()),
             ),
             StatTile(
               label: 'Active tankers',
               value: '${dashboard.tankers}',
               color: appColorPrimary,
               icon: Icons.local_shipping_outlined,
+              // Opened on the active ones only: the tile counts those, and a
+              // list including retired vehicles would not add up to it.
+              onTap: () => _push(context, const TankerListScreen(initialStatus: true)),
             ),
           ],
         ),
@@ -137,12 +226,14 @@ class _Counters extends StatelessWidget {
               value: '${dashboard.drivers}',
               color: appBottomNavColor,
               icon: Icons.badge_outlined,
+              onTap: () => _push(context, const DriverListScreen(initialStatus: true)),
             ),
             StatTile(
               label: 'Active customers',
               value: '${dashboard.customers}',
               color: appetitBrownColor,
               icon: Icons.people_outline,
+              onTap: () => _push(context, const CustomerListScreen(initialStatus: true)),
             ),
           ],
         ),

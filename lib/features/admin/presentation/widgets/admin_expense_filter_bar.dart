@@ -4,9 +4,11 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/models/driver_expense.dart';
+import '../../../../shared/widgets/app_filter_chip.dart';
+import '../../../../shared/widgets/app_search_field.dart';
 import '../../domain/admin_expense_repository.dart';
 import '../providers/admin_expenses_controller.dart';
-import 'expense_driver_picker_sheet.dart';
+import 'driver_filter_sheet.dart';
 
 /// Driver / category / date-range / search, mirroring what the web panel's
 /// DataTable offers so the two screens answer the same questions.
@@ -79,10 +81,13 @@ class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
   }
 
   Future<void> _pickDriver() async {
-    final picked = await showModalBottomSheet<ExpenseDriverChoice>(
+    final picked = await showModalBottomSheet<DriverFilterChoice>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => const ExpenseDriverPickerSheet(),
+      builder: (_) => const DriverFilterSheet(
+        title: 'Whose expenses?',
+        anySubtitle: 'Everybody’s spending together',
+      ),
     );
 
     if (picked == null) return;
@@ -103,8 +108,9 @@ class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-          child: _SearchField(
+          child: AppSearchField(
             controller: _searchController,
+            hint: 'Search a driver or a note',
             onSubmitted: (value) => _apply(filter.copyWith(search: value)),
           ),
         ),
@@ -114,13 +120,13 @@ class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              _FilterChip(
+              AppFilterChip(
                 label: filter.driverName ?? 'All drivers',
                 icon: Icons.person_outline,
                 selected: filter.driverId != null,
                 onTap: _pickDriver,
               ),
-              _FilterChip(
+              AppFilterChip(
                 label: filter.hasRange
                     ? '${_dayMonth.format(filter.from!)} – ${_dayMonth.format(filter.to!)}'
                     : 'All time',
@@ -137,7 +143,7 @@ class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
                 color: appTextColorSecondary.withValues(alpha: 0.2),
               ),
               for (final category in ExpenseCategory.values)
-                _FilterChip(
+                AppFilterChip(
                   label: category.label,
                   colour: category.color,
                   selected: filter.category == category,
@@ -148,7 +154,7 @@ class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
                   ),
                 ),
               if (isFiltered)
-                _FilterChip(
+                AppFilterChip(
                   label: 'Clear',
                   icon: Icons.close,
                   selected: false,
@@ -165,131 +171,4 @@ class _AdminExpenseFilterBarState extends ConsumerState<AdminExpenseFilterBar> {
   }
 }
 
-/// The app's borderless cream input, with the search affordances this bar
-/// needs: submit on done, and a clear button once there is something to
-/// clear. [AppTextField] is not used because it takes a label above the
-/// field, which a single-line search row does not want.
-class _SearchField extends StatefulWidget {
-  const _SearchField({required this.controller, required this.onSubmitted});
 
-  final TextEditingController controller;
-  final ValueChanged<String> onSubmitted;
-
-  @override
-  State<_SearchField> createState() => _SearchFieldState();
-}
-
-class _SearchFieldState extends State<_SearchField> {
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: TextField(
-        controller: widget.controller,
-        textInputAction: TextInputAction.search,
-        onSubmitted: widget.onSubmitted,
-        // Redraws so the clear button appears and disappears with the text.
-        onChanged: (_) => setState(() {}),
-        decoration: InputDecoration(
-          hintText: 'Search a driver or a note',
-          hintStyle: const TextStyle(color: Colors.grey, fontSize: 13.5),
-          prefixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
-          suffixIcon: widget.controller.text.isEmpty
-              ? null
-              : IconButton(
-                  icon: const Icon(Icons.close, size: 18, color: Colors.grey),
-                  onPressed: () {
-                    widget.controller.clear();
-                    widget.onSubmitted('');
-                  },
-                ),
-          border: InputBorder.none,
-          filled: true,
-          fillColor: isDark
-              ? Theme.of(context).cardColor
-              : appetitAppContainerColor.withValues(alpha: 0.6),
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-        ),
-      ),
-    );
-  }
-}
-
-/// One filter chip, in the design's own language rather than Material's.
-///
-/// Selected takes the category's own colour where there is one, so a chosen
-/// Fuel chip and the Fuel spine on the rows below it are the same blue — the
-/// filter and what it filtered read as one thing.
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.icon,
-    this.colour,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final IconData? icon;
-  final Color? colour;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = colour ?? appColorPrimary;
-    final foreground = selected
-        ? (isDark ? Colors.white : accent)
-        : (isDark ? Colors.white70 : appTextColorSecondary);
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: Material(
-        color: selected
-            ? accent.withValues(alpha: isDark ? 0.34 : 0.14)
-            : (isDark ? Theme.of(context).cardColor : appetitAppContainerColor.withValues(alpha: 0.5)),
-        borderRadius: BorderRadius.circular(20),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: selected ? accent.withValues(alpha: 0.55) : Colors.transparent,
-              ),
-            ),
-            child: Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 15, color: foreground),
-                  const SizedBox(width: 5),
-                ] else if (colour != null) ...[
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-                  ),
-                  const SizedBox(width: 6),
-                ],
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: foreground,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -56,21 +56,44 @@ class _FakeSpotRepository implements SpotRepository {
       ]);
 }
 
+/// Answers a blank query with the whole book, the way the real endpoint does —
+/// the picker browses before it searches.
 class _FakeCustomerLookup implements CustomerLookupRepository {
-  String? lastQuery;
+  final queries = <String>[];
+
+  static final _book = <CustomerOption>[
+    CustomerOption.fromJson(const {
+      'id': 42,
+      'full_name': 'Sunita Joshi',
+      'mobile': '9333333333',
+      'address': 'Flat 4, Kothrud',
+    }),
+    CustomerOption.fromJson(const {
+      'id': 43,
+      'full_name': 'Mahesh Kale',
+      'mobile': '9444444444',
+      'address': 'Shop 2, Warje',
+    }),
+  ];
 
   @override
-  Future<ApiResult<List<CustomerOption>>> search(String query) async {
-    lastQuery = query;
+  Future<ApiResult<Paginated<CustomerOption>>> search(String query) async {
+    queries.add(query);
 
-    return Success(<CustomerOption>[
-      CustomerOption.fromJson(const {
-        'id': 42,
-        'full_name': 'Sunita Joshi',
-        'mobile': '9333333333',
-        'address': 'Flat 4, Kothrud',
-      }),
-    ]);
+    final matched = query.isEmpty
+        ? _book
+        : _book
+            .where((c) => c.fullName.toLowerCase().contains(query.toLowerCase()))
+            .toList(growable: false);
+
+    return Success(Paginated<CustomerOption>(
+      items: matched,
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 100,
+      total: matched.length,
+      hasMore: false,
+    ));
   }
 }
 
@@ -131,6 +154,10 @@ const _pricedTanker = <String, dynamic>{
 };
 
 void main() {
+  /// The lookup the last `pumpForm` handed the screen, so a test can read the
+  /// queries it was actually asked.
+  late _FakeCustomerLookup lookup;
+
   Future<_RecordingOrderRepository> pumpForm(
     WidgetTester tester, {
     Map<String, dynamic>? tanker = _pricedTanker,
@@ -140,6 +167,7 @@ void main() {
     addTearDown(tester.view.reset);
 
     final orders = _RecordingOrderRepository();
+    lookup = _FakeCustomerLookup();
 
     await tester.pumpWidget(
       ProviderScope(
@@ -147,7 +175,7 @@ void main() {
           driverRepositoryProvider.overrideWithValue(_FakeDriverRepository(tanker: tanker)),
           driverOrderRepositoryProvider.overrideWithValue(orders),
           spotRepositoryProvider.overrideWithValue(_FakeSpotRepository()),
-          customerLookupRepositoryProvider.overrideWithValue(_FakeCustomerLookup()),
+          customerLookupRepositoryProvider.overrideWithValue(lookup),
           // The slot dropdown would otherwise reach the network.
           deliverySlotOptionsProvider.overrideWith((ref) async => []),
         ],
@@ -171,6 +199,40 @@ void main() {
     await tester.tap(find.text('Sunita Joshi').last);
     await tester.pumpAndSettle();
   }
+
+  testWidgets('tapping the picker lists every customer, nothing typed', (tester) async {
+    await pumpForm(tester);
+
+    // Nothing is asked for until the field is opened — the form must not
+    // fetch the customer book it may never show.
+    expect(lookup.queries, isEmpty);
+
+    await tester.tap(find.widgetWithText(TextField, 'Customer'));
+    await tester.pumpAndSettle();
+
+    // A blank query, immediately: the browse is not behind the 400 ms
+    // debounce, which exists for typing.
+    expect(lookup.queries, ['']);
+    expect(find.text('Sunita Joshi'), findsOneWidget);
+    expect(find.text('Mahesh Kale'), findsOneWidget);
+  });
+
+  testWidgets('typing narrows the open list, clearing it restores everyone', (tester) async {
+    await pumpForm(tester);
+
+    await tester.enterText(find.widgetWithText(TextField, 'Customer'), 'Mahesh');
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mahesh Kale'), findsOneWidget);
+    expect(find.text('Sunita Joshi'), findsNothing);
+
+    await tester.enterText(find.widgetWithText(TextField, 'Customer'), '');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sunita Joshi'), findsOneWidget);
+    expect(find.text('Mahesh Kale'), findsOneWidget);
+  });
 
   testWidgets('a driver with no tanker is refused before the form', (tester) async {
     await pumpForm(tester, tanker: null);

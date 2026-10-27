@@ -11,7 +11,12 @@ import '../widgets/entity_filter_bar.dart';
 import 'driver_form_screen.dart';
 
 class DriverListScreen extends ConsumerStatefulWidget {
-  const DriverListScreen({super.key});
+  const DriverListScreen({super.key, this.initialStatus});
+
+  /// Set by the dashboard's "Active drivers" tile, so the list the owner lands
+  /// on matches the number they tapped. Null from the drawer, which lists
+  /// everyone.
+  final bool? initialStatus;
 
   @override
   ConsumerState<DriverListScreen> createState() => _DriverListScreenState();
@@ -20,13 +25,17 @@ class DriverListScreen extends ConsumerStatefulWidget {
 class _DriverListScreenState extends ConsumerState<DriverListScreen> {
   final _scrollController = ScrollController();
 
+  /// Keyed by the opening filter — see the controller's own note.
+  AdminDriversControllerProvider get _controller =>
+      adminDriversControllerProvider(initialStatus: widget.initialStatus);
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >
           _scrollController.position.maxScrollExtent - 200) {
-        ref.read(adminDriversControllerProvider.notifier).loadMore();
+        ref.read(_controller.notifier).loadMore();
       }
     });
   }
@@ -42,13 +51,13 @@ class _DriverListScreenState extends ConsumerState<DriverListScreen> {
       MaterialPageRoute(builder: (_) => DriverFormScreen(existing: existing)),
     );
 
-    await ref.read(adminDriversControllerProvider.notifier).refresh();
+    await ref.read(_controller.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(adminDriversControllerProvider);
-    final notifier = ref.read(adminDriversControllerProvider.notifier);
+    final state = ref.watch(_controller);
+    final notifier = ref.read(_controller.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Drivers')),

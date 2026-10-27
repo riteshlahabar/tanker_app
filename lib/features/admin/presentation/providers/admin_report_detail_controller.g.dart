@@ -7,7 +7,7 @@ part of 'admin_report_detail_controller.dart';
 // **************************************************************************
 
 String _$adminReportDetailControllerHash() =>
-    r'5dc4ccb785a313425420d45a2e358a75a7875021';
+    r'86013351e6f42cc4bc2e1da96e5e1e2c2839284e';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -33,13 +33,26 @@ class _SystemHash {
 abstract class _$AdminReportDetailController
     extends BuildlessAutoDisposeNotifier<AdminReportDetailState> {
   late final String reportKey;
+  late final DateTime? initialFrom;
+  late final DateTime? initialTo;
 
-  AdminReportDetailState build(String reportKey);
+  AdminReportDetailState build(
+    String reportKey, {
+    DateTime? initialFrom,
+    DateTime? initialTo,
+  });
 }
 
 /// Backs one report's detail screen — the server defaults the date range to
 /// this month when the filter leaves `from`/`to` null, so the first load
 /// needs no client-side default.
+///
+/// **A screen opening the report at a particular range passes it here**, as
+/// part of the provider's identity, rather than setting it afterwards: the
+/// dashboard's Revenue tile wants today. Riverpod forbids modifying a
+/// provider from `initState`, and seeding it once the opening load has
+/// started races two requests — so the range has to be known at `build()`,
+/// and then the one request `FirstLoad` fires already carries it.
 ///
 /// Copied from [AdminReportDetailController].
 @ProviderFor(AdminReportDetailController)
@@ -49,11 +62,25 @@ const adminReportDetailControllerProvider = AdminReportDetailControllerFamily();
 /// this month when the filter leaves `from`/`to` null, so the first load
 /// needs no client-side default.
 ///
+/// **A screen opening the report at a particular range passes it here**, as
+/// part of the provider's identity, rather than setting it afterwards: the
+/// dashboard's Revenue tile wants today. Riverpod forbids modifying a
+/// provider from `initState`, and seeding it once the opening load has
+/// started races two requests — so the range has to be known at `build()`,
+/// and then the one request `FirstLoad` fires already carries it.
+///
 /// Copied from [AdminReportDetailController].
 class AdminReportDetailControllerFamily extends Family<AdminReportDetailState> {
   /// Backs one report's detail screen — the server defaults the date range to
   /// this month when the filter leaves `from`/`to` null, so the first load
   /// needs no client-side default.
+  ///
+  /// **A screen opening the report at a particular range passes it here**, as
+  /// part of the provider's identity, rather than setting it afterwards: the
+  /// dashboard's Revenue tile wants today. Riverpod forbids modifying a
+  /// provider from `initState`, and seeding it once the opening load has
+  /// started races two requests — so the range has to be known at `build()`,
+  /// and then the one request `FirstLoad` fires already carries it.
   ///
   /// Copied from [AdminReportDetailController].
   const AdminReportDetailControllerFamily();
@@ -62,16 +89,35 @@ class AdminReportDetailControllerFamily extends Family<AdminReportDetailState> {
   /// this month when the filter leaves `from`/`to` null, so the first load
   /// needs no client-side default.
   ///
+  /// **A screen opening the report at a particular range passes it here**, as
+  /// part of the provider's identity, rather than setting it afterwards: the
+  /// dashboard's Revenue tile wants today. Riverpod forbids modifying a
+  /// provider from `initState`, and seeding it once the opening load has
+  /// started races two requests — so the range has to be known at `build()`,
+  /// and then the one request `FirstLoad` fires already carries it.
+  ///
   /// Copied from [AdminReportDetailController].
-  AdminReportDetailControllerProvider call(String reportKey) {
-    return AdminReportDetailControllerProvider(reportKey);
+  AdminReportDetailControllerProvider call(
+    String reportKey, {
+    DateTime? initialFrom,
+    DateTime? initialTo,
+  }) {
+    return AdminReportDetailControllerProvider(
+      reportKey,
+      initialFrom: initialFrom,
+      initialTo: initialTo,
+    );
   }
 
   @override
   AdminReportDetailControllerProvider getProviderOverride(
     covariant AdminReportDetailControllerProvider provider,
   ) {
-    return call(provider.reportKey);
+    return call(
+      provider.reportKey,
+      initialFrom: provider.initialFrom,
+      initialTo: provider.initialTo,
+    );
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -93,6 +139,13 @@ class AdminReportDetailControllerFamily extends Family<AdminReportDetailState> {
 /// this month when the filter leaves `from`/`to` null, so the first load
 /// needs no client-side default.
 ///
+/// **A screen opening the report at a particular range passes it here**, as
+/// part of the provider's identity, rather than setting it afterwards: the
+/// dashboard's Revenue tile wants today. Riverpod forbids modifying a
+/// provider from `initState`, and seeding it once the opening load has
+/// started races two requests — so the range has to be known at `build()`,
+/// and then the one request `FirstLoad` fires already carries it.
+///
 /// Copied from [AdminReportDetailController].
 class AdminReportDetailControllerProvider
     extends
@@ -104,20 +157,35 @@ class AdminReportDetailControllerProvider
   /// this month when the filter leaves `from`/`to` null, so the first load
   /// needs no client-side default.
   ///
+  /// **A screen opening the report at a particular range passes it here**, as
+  /// part of the provider's identity, rather than setting it afterwards: the
+  /// dashboard's Revenue tile wants today. Riverpod forbids modifying a
+  /// provider from `initState`, and seeding it once the opening load has
+  /// started races two requests — so the range has to be known at `build()`,
+  /// and then the one request `FirstLoad` fires already carries it.
+  ///
   /// Copied from [AdminReportDetailController].
-  AdminReportDetailControllerProvider(String reportKey)
-    : this._internal(
-        () => AdminReportDetailController()..reportKey = reportKey,
-        from: adminReportDetailControllerProvider,
-        name: r'adminReportDetailControllerProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$adminReportDetailControllerHash,
-        dependencies: AdminReportDetailControllerFamily._dependencies,
-        allTransitiveDependencies:
-            AdminReportDetailControllerFamily._allTransitiveDependencies,
-        reportKey: reportKey,
-      );
+  AdminReportDetailControllerProvider(
+    String reportKey, {
+    DateTime? initialFrom,
+    DateTime? initialTo,
+  }) : this._internal(
+         () => AdminReportDetailController()
+           ..reportKey = reportKey
+           ..initialFrom = initialFrom
+           ..initialTo = initialTo,
+         from: adminReportDetailControllerProvider,
+         name: r'adminReportDetailControllerProvider',
+         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+             ? null
+             : _$adminReportDetailControllerHash,
+         dependencies: AdminReportDetailControllerFamily._dependencies,
+         allTransitiveDependencies:
+             AdminReportDetailControllerFamily._allTransitiveDependencies,
+         reportKey: reportKey,
+         initialFrom: initialFrom,
+         initialTo: initialTo,
+       );
 
   AdminReportDetailControllerProvider._internal(
     super._createNotifier, {
@@ -127,15 +195,23 @@ class AdminReportDetailControllerProvider
     required super.debugGetCreateSourceHash,
     required super.from,
     required this.reportKey,
+    required this.initialFrom,
+    required this.initialTo,
   }) : super.internal();
 
   final String reportKey;
+  final DateTime? initialFrom;
+  final DateTime? initialTo;
 
   @override
   AdminReportDetailState runNotifierBuild(
     covariant AdminReportDetailController notifier,
   ) {
-    return notifier.build(reportKey);
+    return notifier.build(
+      reportKey,
+      initialFrom: initialFrom,
+      initialTo: initialTo,
+    );
   }
 
   @override
@@ -143,13 +219,18 @@ class AdminReportDetailControllerProvider
     return ProviderOverride(
       origin: this,
       override: AdminReportDetailControllerProvider._internal(
-        () => create()..reportKey = reportKey,
+        () => create()
+          ..reportKey = reportKey
+          ..initialFrom = initialFrom
+          ..initialTo = initialTo,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
         reportKey: reportKey,
+        initialFrom: initialFrom,
+        initialTo: initialTo,
       ),
     );
   }
@@ -166,13 +247,17 @@ class AdminReportDetailControllerProvider
   @override
   bool operator ==(Object other) {
     return other is AdminReportDetailControllerProvider &&
-        other.reportKey == reportKey;
+        other.reportKey == reportKey &&
+        other.initialFrom == initialFrom &&
+        other.initialTo == initialTo;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, reportKey.hashCode);
+    hash = _SystemHash.combine(hash, initialFrom.hashCode);
+    hash = _SystemHash.combine(hash, initialTo.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -184,6 +269,12 @@ mixin AdminReportDetailControllerRef
     on AutoDisposeNotifierProviderRef<AdminReportDetailState> {
   /// The parameter `reportKey` of this provider.
   String get reportKey;
+
+  /// The parameter `initialFrom` of this provider.
+  DateTime? get initialFrom;
+
+  /// The parameter `initialTo` of this provider.
+  DateTime? get initialTo;
 }
 
 class _AdminReportDetailControllerProviderElement
@@ -198,6 +289,12 @@ class _AdminReportDetailControllerProviderElement
   @override
   String get reportKey =>
       (origin as AdminReportDetailControllerProvider).reportKey;
+  @override
+  DateTime? get initialFrom =>
+      (origin as AdminReportDetailControllerProvider).initialFrom;
+  @override
+  DateTime? get initialTo =>
+      (origin as AdminReportDetailControllerProvider).initialTo;
 }
 
 // ignore_for_file: type=lint

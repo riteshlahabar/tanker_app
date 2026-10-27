@@ -7,10 +7,10 @@ import '../../domain/driver_option.dart';
 import '../providers/admin_picker_controllers.dart';
 
 /// What the sheet came back with: a driver, or "all drivers".
-class ExpenseDriverChoice {
-  const ExpenseDriverChoice({this.id, this.name});
+class DriverFilterChoice {
+  const DriverFilterChoice({this.id, this.name});
 
-  const ExpenseDriverChoice.any() : id = null, name = null;
+  const DriverFilterChoice.any() : id = null, name = null;
 
   final int? id;
   final String? name;
@@ -18,7 +18,8 @@ class ExpenseDriverChoice {
   bool get isAny => id == null;
 }
 
-/// Choose whose expenses to show.
+/// Choose which driver a list or report is narrowed to — the filter sheet,
+/// shared by the Driver Expenses screen and the reports screen.
 ///
 /// Deliberately **not** the shared [DriverPickerSheet]: that one exists to
 /// pick a driver who will *take an order*, so it disables anyone holding no
@@ -29,14 +30,19 @@ class ExpenseDriverChoice {
 ///
 /// It returns the **name** with the id so the filter chip and the totals card
 /// can say whose figure is on screen.
-class ExpenseDriverPickerSheet extends ConsumerStatefulWidget {
-  const ExpenseDriverPickerSheet({super.key});
+class DriverFilterSheet extends ConsumerStatefulWidget {
+  const DriverFilterSheet({super.key, this.title = 'Which driver?', this.anySubtitle = 'Every driver together'});
+
+  final String title;
+
+  /// What choosing "All drivers" means on the screen that opened the sheet.
+  final String anySubtitle;
 
   @override
-  ConsumerState<ExpenseDriverPickerSheet> createState() => _ExpenseDriverPickerSheetState();
+  ConsumerState<DriverFilterSheet> createState() => _DriverFilterSheetState();
 }
 
-class _ExpenseDriverPickerSheetState extends ConsumerState<ExpenseDriverPickerSheet> {
+class _DriverFilterSheetState extends ConsumerState<DriverFilterSheet> {
   final _searchController = TextEditingController();
 
   @override
@@ -55,9 +61,9 @@ class _ExpenseDriverPickerSheetState extends ConsumerState<ExpenseDriverPickerSh
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Whose expenses?',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          Text(
+            widget.title,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
           ),
           const SizedBox(height: 12),
           ClipRRect(
@@ -84,7 +90,8 @@ class _ExpenseDriverPickerSheetState extends ConsumerState<ExpenseDriverPickerSh
           ),
           const SizedBox(height: 10),
           _AnyDriverRow(
-            onTap: () => Navigator.pop(context, const ExpenseDriverChoice.any()),
+            subtitle: widget.anySubtitle,
+            onTap: () => Navigator.pop(context, const DriverFilterChoice.any()),
           ),
           if (state.loading) const LinearProgressIndicator(minHeight: 2),
           if (state.error != null)
@@ -113,9 +120,10 @@ class _ExpenseDriverPickerSheetState extends ConsumerState<ExpenseDriverPickerSh
 }
 
 class _AnyDriverRow extends StatelessWidget {
-  const _AnyDriverRow({required this.onTap});
+  const _AnyDriverRow({required this.onTap, required this.subtitle});
 
   final VoidCallback onTap;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +132,7 @@ class _AnyDriverRow extends StatelessWidget {
       leading: const Icon(Icons.groups_outlined, size: 20, color: appColorPrimary),
       leadingTint: appColorPrimary,
       title: 'All drivers',
-      subtitle: 'Everybody’s spending together',
+      subtitle: subtitle,
     );
   }
 }
@@ -141,7 +149,7 @@ class _DriverRow extends StatelessWidget {
     return _SheetRow(
       onTap: () => Navigator.pop(
         context,
-        ExpenseDriverChoice(id: driver.id, name: driver.fullName),
+        DriverFilterChoice(id: driver.id, name: driver.fullName),
       ),
       leading: Text(
         initial,

@@ -11,7 +11,12 @@ import '../widgets/entity_filter_bar.dart';
 import 'customer_form_screen.dart';
 
 class CustomerListScreen extends ConsumerStatefulWidget {
-  const CustomerListScreen({super.key});
+  const CustomerListScreen({super.key, this.initialStatus});
+
+  /// Set by the dashboard's "Active customers" tile, so the list the owner lands
+  /// on matches the number they tapped. Null from the drawer, which lists
+  /// everyone.
+  final bool? initialStatus;
 
   @override
   ConsumerState<CustomerListScreen> createState() => _CustomerListScreenState();
@@ -20,13 +25,17 @@ class CustomerListScreen extends ConsumerStatefulWidget {
 class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   final _scrollController = ScrollController();
 
+  /// Keyed by the opening filter — see the controller's own note.
+  AdminCustomersControllerProvider get _controller =>
+      adminCustomersControllerProvider(initialStatus: widget.initialStatus);
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >
           _scrollController.position.maxScrollExtent - 200) {
-        ref.read(adminCustomersControllerProvider.notifier).loadMore();
+        ref.read(_controller.notifier).loadMore();
       }
     });
   }
@@ -42,12 +51,12 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       MaterialPageRoute(builder: (_) => CustomerFormScreen(existing: existing)),
     );
 
-    await ref.read(adminCustomersControllerProvider.notifier).refresh();
+    await ref.read(_controller.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(adminCustomersControllerProvider);
+    final state = ref.watch(_controller);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Customers')),
@@ -55,7 +64,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         children: [
           EntityFilterBar(
             filter: state.filter,
-            onChanged: ref.read(adminCustomersControllerProvider.notifier).setFilter,
+            onChanged: ref.read(_controller.notifier).setFilter,
             searchHint: 'Search by name or mobile',
           ),
           if (!state.loading || !state.paginated.isEmpty)
@@ -75,7 +84,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                       )
                     : RefreshIndicator(
                         onRefresh: () =>
-                            ref.read(adminCustomersControllerProvider.notifier).refresh(),
+                            ref.read(_controller.notifier).refresh(),
                         child: ListView.builder(
                           controller: _scrollController,
                           padding: const EdgeInsets.only(top: 4, bottom: 90),

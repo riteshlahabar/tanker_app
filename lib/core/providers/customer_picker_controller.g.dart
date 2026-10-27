@@ -7,18 +7,21 @@ part of 'customer_picker_controller.dart';
 // **************************************************************************
 
 String _$customerPickerControllerHash() =>
-    r'346009c6262d73bea7461aa3380d9a349853eeca';
+    r'1e8fd7ee5c93b6c04835b0e73d24739f945cffdc';
 
-/// Search-as-you-type over customers, for an order form's picker.
+/// The customer list behind an order form's picker, searchable as you type.
 ///
 /// Lives in `core/providers` rather than under a role because both the admin's
 /// New Order screen and the driver's read it; the endpoint behind it is chosen
 /// by `customerLookupRepositoryProvider` from the signed-in role, so this
 /// controller never knows or cares which role is typing.
 ///
-/// A 400 ms debounce keeps a fast typist from firing a request per keystroke,
-/// and a blank query resets to empty rather than asking for every customer —
-/// the picker is a search box, not a browsable list.
+/// **Opening it with nothing typed lists every customer** — the owner asked
+/// for a dropdown you *can* search, not a search box that hides the book until
+/// you guess a name. The unfiltered page is cached for the life of the
+/// provider, so reopening the field is instant and a browse costs one request
+/// per visit rather than one per tap. A 400 ms debounce still keeps a fast
+/// typist from firing a request per keystroke.
 ///
 /// Copied from [CustomerPickerController].
 @ProviderFor(CustomerPickerController)

@@ -44,10 +44,15 @@ class AdminCustomersState {
 @riverpod
 class AdminCustomersController extends _$AdminCustomersController {
   @override
-  AdminCustomersState build() {
+  /// [initialStatus] opens the list already narrowed — the dashboard's
+  /// "Active" counters do, so the list matches the figure that was tapped.
+  /// It is a family argument rather than something set after mounting:
+  /// Riverpod forbids modifying a provider from a widget lifecycle, and
+  /// seeding it later races the opening load.
+  AdminCustomersState build({bool? initialStatus}) {
     FirstLoad.after(ref, refresh);
 
-    return const AdminCustomersState();
+    return AdminCustomersState(filter: EntityListFilter(status: initialStatus));
   }
 
   Future<void> setFilter(EntityListFilter filter) async {
