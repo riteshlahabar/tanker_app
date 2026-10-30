@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/providers/first_load.dart';
+import '../../../../core/providers/opened_order.dart';
 import '../../../../shared/models/order.dart';
 import 'driver_providers.dart';
 
@@ -34,6 +35,12 @@ class DriverOrderDetailController extends _$DriverOrderDetailController {
   @override
   DriverOrderDetailState build(int orderId) {
     FirstLoad.after(ref, refresh);
+
+    // Opening the order is what the buzzer waits for, so it is announced
+    // here rather than from the alert's Open button: this controller is built
+    // exactly once per opening, however the driver reached the screen — the
+    // banner, their orders list, the dashboard.
+    FirstLoad.after(ref, () async => ref.read(openedOrderProvider.notifier).opened(orderId));
 
     return const DriverOrderDetailState();
   }

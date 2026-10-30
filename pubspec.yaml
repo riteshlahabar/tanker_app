@@ -35,6 +35,16 @@ dependencies:
   # which needs the device's own position.
   geolocator: ^13.0.2
 
+  # THE BUZZER — a new order rings on the other side until it is seen.
+  # audioplayers loops assets/sounds/buzzer.wav; vibration carries it when the
+  # phone is in a pocket on a truck. flutter_foreground_task does not poll
+  # itself: it holds the process awake so the ordinary Timer in
+  # OrderAlertsController keeps firing with the app minimised, which is what
+  # keeps one ring-and-stop code path instead of two.
+  audioplayers: ^6.8.1
+  vibration: ^3.2.1
+  flutter_foreground_task: ^11.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -54,6 +64,8 @@ flutter:
   assets:
     - assets/images/tsml_logo.png
     - assets/images/tsml_favicon.png
+    # Generated, not downloaded — tool/make_buzzer.py rebuilds it.
+    - assets/sounds/buzzer.wav
 
 # Config for flutter_launcher_icons (dart run flutter_launcher_icons).
 flutter_launcher_icons:

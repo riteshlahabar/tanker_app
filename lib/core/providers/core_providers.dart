@@ -7,6 +7,7 @@ import '../../features/auth/presentation/providers/session_controller.dart';
 import '../../features/auth/presentation/providers/session_state.dart';
 import '../../shared/models/delivery_slot.dart';
 import '../../shared/models/user_role.dart';
+import '../alerts/buzzer.dart';
 import '../config/app_config.dart';
 import '../network/api_client.dart';
 import '../network/interceptors/auth_interceptor.dart';
@@ -14,6 +15,8 @@ import '../network/session_expiry_bus.dart';
 import '../repositories/customer_lookup_repository.dart';
 import '../repositories/delivery_slot_repository.dart';
 import '../repositories/delivery_slot_repository_impl.dart';
+import '../repositories/order_alerts_repository.dart';
+import '../repositories/order_alerts_repository_impl.dart';
 import '../storage/prefs.dart';
 import '../storage/secure_storage.dart';
 
@@ -104,6 +107,37 @@ CustomerLookupRepository customerLookupRepository(Ref ref) {
     client: ref.watch(apiClientProvider),
     path: isAdmin ? '/admin/customers' : '/driver/customers',
   );
+}
+
+/// The buzzer's alert list, for whichever of the two rung roles is signed in.
+///
+/// The path prefix is chosen **here, once**, exactly as
+/// [customerLookupRepository] does it: the endpoints are the same two shapes
+/// under `/admin` and `/driver`, and the audience comes from the token, so a
+/// screen that picked its own path would only ever be picking a 403. Anyone
+/// else — a customer, or a session still being restored — gets the driver
+/// path they cannot call, and [OrderAlertsController] never polls for them.
+@Riverpod(keepAlive: true)
+OrderAlertsRepository orderAlertsRepository(Ref ref) {
+  final session = ref.watch(sessionControllerProvider);
+  final isAdmin = session is SessionSignedIn && session.user.role == UserRole.admin;
+
+  return OrderAlertsRepositoryImpl(
+    client: ref.watch(apiClientProvider),
+    path: isAdmin ? '/admin' : '/driver',
+  );
+}
+
+/// The noise itself. One instance for the app — two players would mean two
+/// overlapping loops — and overridden with a [SilentBuzzer] in tests, which
+/// is the whole reason [Buzzer] is an interface.
+@Riverpod(keepAlive: true)
+Buzzer buzzer(Ref ref) {
+  final buzzer = LoopingBuzzer();
+
+  ref.onDispose(buzzer.dispose);
+
+  return buzzer;
 }
 
 /// The windows the panel offers, for a form's dropdown.

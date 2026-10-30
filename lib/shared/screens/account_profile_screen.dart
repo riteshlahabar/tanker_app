@@ -6,6 +6,7 @@ import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/providers/session_controller.dart';
 import '../../features/auth/presentation/providers/session_state.dart';
 import '../widgets/app_text_field.dart';
+import '../widgets/on_duty_card.dart';
 import '../widgets/primary_button.dart';
 
 /// View/edit account details, change password, logout — identical for every
@@ -149,6 +150,9 @@ class _AccountProfileScreenState extends ConsumerState<AccountProfileScreen> {
           Center(child: Text(user.mobile!, style: const TextStyle(color: Colors.grey))),
         const SizedBox(height: 24),
         if (_editing) ..._editingFields() else ..._readOnlyFields(user),
+        const SizedBox(height: 16),
+        // Renders nothing for a customer, who is never rung.
+        const OnDutyCard(),
         const Divider(height: 40),
         const Text('Change Password', style: TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),

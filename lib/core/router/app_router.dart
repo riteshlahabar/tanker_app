@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../features/admin/presentation/screens/admin_order_detail_screen.dart';
 import '../../features/admin/presentation/screens/admin_shell.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/customer/presentation/screens/customer_shell.dart';
+import '../../features/driver/presentation/screens/driver_order_detail_screen.dart';
 import '../../features/driver/presentation/screens/driver_shell.dart';
 import '../../shared/models/user_role.dart';
 import 'routes.dart';
@@ -14,6 +16,25 @@ import 'routes.dart';
 /// button returning to the screen immediately behind it.
 class AppRouter {
   AppRouter._();
+
+  /// The one root navigator, reachable from outside the widget tree.
+  ///
+  /// Needed by [OrderAlertOverlay], which is mounted from
+  /// `MaterialApp.builder` so it can draw above pushed screens — and is
+  /// therefore *above* the Navigator, with no route of its own to push from.
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  /// The order detail screen the signed-in role is allowed to read.
+  ///
+  /// The two screens are different — the admin's can assign and cancel, the
+  /// driver's can start a refill — so the buzzer's Open has to choose, and
+  /// this is the only place that choice is written.
+  static Route<void> orderDetailRoute(int orderId, UserRole? role) => MaterialPageRoute<void>(
+        builder: (_) => switch (role) {
+          UserRole.driver => DriverOrderDetailScreen(orderId: orderId),
+          _ => AdminOrderDetailScreen(orderId: orderId),
+        },
+      );
 
   static Route<dynamic> generate(RouteSettings settings) {
     final builder = switch (settings.name) {

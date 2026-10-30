@@ -149,6 +149,54 @@ final customerLookupRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CustomerLookupRepositoryRef = ProviderRef<CustomerLookupRepository>;
+String _$orderAlertsRepositoryHash() =>
+    r'191c5018bd42473ccf964e4ac23a2ffde8fe81df';
+
+/// The buzzer's alert list, for whichever of the two rung roles is signed in.
+///
+/// The path prefix is chosen **here, once**, exactly as
+/// [customerLookupRepository] does it: the endpoints are the same two shapes
+/// under `/admin` and `/driver`, and the audience comes from the token, so a
+/// screen that picked its own path would only ever be picking a 403. Anyone
+/// else — a customer, or a session still being restored — gets the driver
+/// path they cannot call, and [OrderAlertsController] never polls for them.
+///
+/// Copied from [orderAlertsRepository].
+@ProviderFor(orderAlertsRepository)
+final orderAlertsRepositoryProvider = Provider<OrderAlertsRepository>.internal(
+  orderAlertsRepository,
+  name: r'orderAlertsRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$orderAlertsRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef OrderAlertsRepositoryRef = ProviderRef<OrderAlertsRepository>;
+String _$buzzerHash() => r'3cab378f4959c009e55af75098acec38d779d71e';
+
+/// The noise itself. One instance for the app — two players would mean two
+/// overlapping loops — and overridden with a [SilentBuzzer] in tests, which
+/// is the whole reason [Buzzer] is an interface.
+///
+/// Copied from [buzzer].
+@ProviderFor(buzzer)
+final buzzerProvider = Provider<Buzzer>.internal(
+  buzzer,
+  name: r'buzzerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$buzzerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef BuzzerRef = ProviderRef<Buzzer>;
 String _$deliverySlotOptionsHash() =>
     r'fc9fac7dcb331e374e031eacd552008eaf44ddd3';
 

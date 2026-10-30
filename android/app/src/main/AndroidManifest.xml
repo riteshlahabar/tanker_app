@@ -1,8 +1,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- THE BUZZER. The alert vibrates as well as rings, because a phone in
+         a shirt pocket on a moving tanker is heard with the body before the
+         ears. -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- Phase 3: the on-duty service. It holds the process awake so the
+         ordinary poll keeps firing with the app minimised; Android would
+         otherwise freeze a backgrounded app within minutes and stop the
+         ringing with no sign that it had. dataSync is the type that matches
+         what it does — fetch data on a timer. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <!-- app_name is a per-flavour resValue in build.gradle.kts, so the
+         launcher name is the client's. -->
     <application
-        android:label="WTMS"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -27,6 +44,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Declared by us only to set foregroundServiceType, which Android
+             14+ requires before a foreground service may start. The name is
+             the plugin's and must not be changed. -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -9,21 +9,22 @@ import '../../domain/admin_report_definition.dart';
 import '../../domain/admin_report_filter.dart';
 import '../../domain/admin_report_result.dart';
 import '../../domain/admin_tanker.dart';
-import '../../domain/driver_salary_row.dart';
 import '../../domain/entity_list_filter.dart';
 import '../providers/admin_providers.dart';
 import '../providers/admin_report_detail_controller.dart';
-import '../widgets/driver_salary_report_body.dart';
+import '../widgets/report_body_registry.dart';
 import '../widgets/report_filter_bar.dart';
 
 /// One screen for every report — they all answer in the same
 /// headings/rows/totals shape, so one screen reads whichever report's
 /// `filterFields` named it rather than seven near-identical screens.
 ///
-/// **A report may bring its own view of the rows.** Driver Deliveries &
-/// Salary does; the rest fall back to the generic table, which is always
-/// right because it draws whatever it is given. The filter bar and the
-/// loading, empty and error states are shared by both paths.
+/// **A report may bring its own view of the rows** — which ones do is
+/// [ReportBodyRegistry]'s list, not this screen's business. Anything it does
+/// not claim falls back to the generic table, which is always right because
+/// it draws whatever it is given. The filter bar and the loading, empty and
+/// error states are shared by every path: a report view only ever replaces
+/// the rows.
 class ReportDetailScreen extends ConsumerStatefulWidget {
   const ReportDetailScreen({super.key, required this.definition, this.initialFilter});
 
@@ -93,10 +94,27 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     final search = filter.search?.trim() ?? '';
 
     return <String>[
-      _entityLabel ?? 'All drivers',
+      ?_entityScope(),
       result.rangeLabel,
       if (search.isNotEmpty) '"$search"',
     ].join('  ·  ');
+  }
+
+  /// The chosen entity, or "all of them" for whichever kind this report
+  /// filters by — and **nothing at all** for a report with no entity filter,
+  /// since "All drivers" over the Daily Delivery Summary would be a sentence
+  /// about a filter it does not offer.
+  String? _entityScope() {
+    if (_entityLabel != null) return _entityLabel;
+
+    final fields = widget.definition.filterFields;
+
+    if (fields.contains('driver')) return 'All drivers';
+    if (fields.contains('customer')) return 'All customers';
+    if (fields.contains('spot')) return 'All filling points';
+    if (fields.contains('tanker')) return 'All tankers';
+
+    return null;
   }
 
   @override
@@ -104,10 +122,13 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     final state = ref.watch(_controller);
     final result = state.result;
 
-    // Null for every report but this one, and for this one if its columns
-    // ever change — see DriverSalaryRow. The generic table below is the
-    // fallback, and it is always right because it draws whatever it is given.
-    final salaryRows = result == null ? null : DriverSalaryRow.fromResult(result);
+    // Null unless a registered report view claims this result — and so null
+    // for a report whose columns changed on the server, which falls back to
+    // the table below. When it is non-null the generic totals strip and its
+    // divider stand down: each view draws its own headline inside the scroll
+    // area, where it can scroll away once the rows are being read.
+    final ownBody =
+        result == null ? null : ReportBodyRegistry.bodyFor(result, _scope(result, state.filter));
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.definition.title)),
@@ -124,7 +145,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
           // The generic totals strip is for the table reports. A report with
           // a view of its own draws its own headline inside the scroll area,
           // where it can scroll away once the rows are being read.
-          if (salaryRows == null && result != null && result.totals.isNotEmpty)
+          if (ownBody == null && result != null && result.totals.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Wrap(
@@ -136,19 +157,15 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                 ],
               ),
             ),
-          if (salaryRows == null) const Divider(height: 1),
-          Expanded(child: _body(state, result, salaryRows)),
+          if (ownBody == null) const Divider(height: 1),
+          Expanded(child: _body(state, result, ownBody)),
         ],
       ),
       bottomNavigationBar: const ShellTabBar(),
     );
   }
 
-  Widget _body(
-    AdminReportDetailState state,
-    AdminReportResult? result,
-    List<DriverSalaryRow>? salaryRows,
-  ) {
+  Widget _body(AdminReportDetailState state, AdminReportResult? result, Widget? ownBody) {
     if (state.loading) return const Center(child: CircularProgressIndicator());
 
     if (result == null) {
@@ -159,13 +176,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
       );
     }
 
-    if (salaryRows != null) {
-      return DriverSalaryReportBody(
-        rows: salaryRows,
-        result: result,
-        scope: _scope(result, state.filter),
-      );
-    }
+    // A report view draws its own empty state, because "no drivers" and "no
+    // filling points" are different sentences.
+    if (ownBody != null) return ownBody;
 
     if (result.rows.isEmpty) {
       return const EmptyState(icon: Icons.inbox_outlined, title: 'No rows for this range');
